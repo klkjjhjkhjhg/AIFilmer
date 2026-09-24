@@ -1,0 +1,385 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AIFilmer — 让 AI 接管"拍摄决策"</title>
+<style>
+  :root {
+    --macaron-pink:   #FFD6E0;
+    --macaron-mint:   #C7F0DB;
+    --macaron-yellow: #FFF1B6;
+    --macaron-blue:   #C8E7FF;
+    --macaron-lilac:  #E3D6FF;
+    --macaron-peach:  #FFE0C2;
+    --text-primary:   #3A3A3A;
+    --text-secondary: #6B6B6B;
+    --bg-card:        #FFFFFF;
+    --bg-page:        #FFF9F5;
+    --border-soft:    #F0E6DC;
+    --shadow:         0 6px 24px rgba(220, 180, 150, 0.15);
+    --radius:         18px;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", "Helvetica Neue", "Microsoft YaHei", sans-serif;
+    background: var(--bg-page);
+    color: var(--text-primary);
+    line-height: 1.7;
+  }
+
+  /* ---------- 顶部 hero ---------- */
+  .hero {
+    background:
+      radial-gradient(circle at 15% 20%, var(--macaron-pink) 0%, transparent 40%),
+      radial-gradient(circle at 85% 30%, var(--macaron-mint) 0%, transparent 45%),
+      radial-gradient(circle at 50% 90%, var(--macaron-yellow) 0%, transparent 50%),
+      linear-gradient(135deg, #FFFAF3 0%, #FFF5EE 100%);
+    padding: 100px 24px 80px;
+    text-align: center;
+  }
+  .hero .emoji {
+    font-size: 64px;
+    margin-bottom: 16px;
+  }
+  .hero h1 {
+    font-size: 48px;
+    font-weight: 800;
+    letter-spacing: -1px;
+    margin-bottom: 12px;
+    background: linear-gradient(135deg, #E89AAA 0%, #C7B8E8 50%, #95D3B4 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+  .hero .tagline {
+    font-size: 18px;
+    color: var(--text-secondary);
+    max-width: 720px;
+    margin: 0 auto 32px;
+  }
+  .hero .badges {
+    display: flex;
+    justify-content: center;
+    gap: 10px;
+    flex-wrap: wrap;
+    margin-bottom: 32px;
+  }
+  .hero .badge {
+    background: rgba(255,255,255,0.75);
+    backdrop-filter: blur(10px);
+    padding: 8px 18px;
+    border-radius: 24px;
+    font-size: 13px;
+    color: var(--text-secondary);
+    box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+  }
+
+  /* ---------- 容器 ---------- */
+  .container {
+    max-width: 1080px;
+    margin: 0 auto;
+    padding: 0 24px;
+  }
+
+  /* ---------- 章节 ---------- */
+  section {
+    padding: 60px 0;
+  }
+  section h2 {
+    font-size: 30px;
+    font-weight: 700;
+    margin-bottom: 12px;
+    text-align: center;
+  }
+  section .section-sub {
+    text-align: center;
+    color: var(--text-secondary);
+    margin-bottom: 36px;
+    font-size: 15px;
+  }
+
+  /* ---------- 三文档卡片 ---------- */
+  .docs-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 20px;
+  }
+  .doc-card {
+    background: var(--bg-card);
+    border-radius: var(--radius);
+    padding: 28px;
+    box-shadow: var(--shadow);
+    transition: transform 0.25s ease, box-shadow 0.25s ease;
+    text-decoration: none;
+    color: var(--text-primary);
+    border: 1px solid var(--border-soft);
+  }
+  .doc-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 12px 32px rgba(220, 180, 150, 0.25);
+  }
+  .doc-card .icon { font-size: 32px; margin-bottom: 12px; }
+  .doc-card .label {
+    font-size: 12px;
+    color: var(--text-secondary);
+    text-transform: uppercase;
+    letter-spacing: 1.2px;
+    margin-bottom: 6px;
+  }
+  .doc-card h3 {
+    font-size: 20px;
+    margin-bottom: 10px;
+  }
+  .doc-card p {
+    font-size: 14px;
+    color: var(--text-secondary);
+    margin-bottom: 14px;
+  }
+  .doc-card .links {
+    display: flex;
+    gap: 12px;
+    font-size: 13px;
+  }
+  .doc-card .links a {
+    color: #B4546F;
+    text-decoration: none;
+    padding: 4px 12px;
+    background: var(--macaron-pink);
+    border-radius: 12px;
+    font-weight: 600;
+  }
+  .doc-card .links a:last-child {
+    background: var(--macaron-blue);
+    color: #2C5C8A;
+  }
+
+  /* ---------- 技术卡片 ---------- */
+  .feature-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+    gap: 16px;
+  }
+  .feature {
+    background: var(--bg-card);
+    border-radius: var(--radius);
+    padding: 22px;
+    box-shadow: var(--shadow);
+    border: 1px solid var(--border-soft);
+  }
+  .feature .icon { font-size: 28px; margin-bottom: 10px; }
+  .feature h4 {
+    font-size: 16px;
+    font-weight: 700;
+    margin-bottom: 6px;
+  }
+  .feature p {
+    font-size: 13.5px;
+    color: var(--text-secondary);
+  }
+
+  /* ---------- 里程碑时间线 ---------- */
+  .timeline {
+    background: var(--bg-card);
+    border-radius: var(--radius);
+    padding: 28px;
+    box-shadow: var(--shadow);
+    border: 1px solid var(--border-soft);
+  }
+  .timeline-item {
+    display: grid;
+    grid-template-columns: 60px 1fr;
+    gap: 16px;
+    padding: 14px 0;
+    border-bottom: 1px dashed var(--border-soft);
+  }
+  .timeline-item:last-child { border-bottom: none; }
+  .timeline-item .id {
+    background: var(--macaron-mint);
+    color: #2D6A4F;
+    padding: 6px 0;
+    text-align: center;
+    border-radius: 10px;
+    font-weight: 700;
+    font-size: 14px;
+  }
+  .timeline-item:nth-child(2) .id { background: var(--macaron-yellow); color: #8A6D1E; }
+  .timeline-item:nth-child(3) .id { background: var(--macaron-blue); color: #2C5C8A; }
+  .timeline-item:nth-child(4) .id { background: var(--macaron-pink); color: #9B2C5C; }
+  .timeline-item:nth-child(5) .id { background: var(--macaron-lilac); color: #5C4D8A; }
+  .timeline-item:nth-child(6) .id { background: var(--macaron-peach); color: #9B5C2C; }
+  .timeline-item .title { font-weight: 600; margin-bottom: 4px; }
+  .timeline-item .desc { color: var(--text-secondary); font-size: 14px; }
+
+  /* ---------- footer ---------- */
+  footer {
+    padding: 40px 24px;
+    text-align: center;
+    color: var(--text-secondary);
+    font-size: 13px;
+    border-top: 1px solid var(--border-soft);
+    margin-top: 40px;
+  }
+  footer a { color: #B4546F; text-decoration: none; }
+</style>
+</head>
+<body>
+
+<section class="hero">
+  <div class="emoji">🎬</div>
+  <h1>AIFilmer</h1>
+  <p class="tagline">
+    让 AI 接管"拍摄决策"，把 iPhone 变成自主摄影师。<br>
+    用户保留指向权，AI 保留拍摄权——多镜头连续拍摄 + 三维方向提示。
+  </p>
+  <div class="badges">
+    <span class="badge">📱 iOS 17+</span>
+    <span class="badge">🍎 iPhone 14+</span>
+    <span class="badge">🤖 端云协同</span>
+    <span class="badge">📐 双环分层架构</span>
+    <span class="badge">🎨 MCP-like 协议</span>
+    <span class="badge">🎯 MVP 阶段</span>
+  </div>
+</section>
+
+<section>
+  <div class="container">
+    <h2>📚 项目文档</h2>
+    <p class="section-sub">完整设计文档 · 三段式软件工程 · 持续维护</p>
+
+    <div class="docs-grid">
+      <a class="doc-card" href="./docs/requirements-analysis.html">
+        <div class="icon">📋</div>
+        <div class="label">Requirements</div>
+        <h3>需求分析</h3>
+        <p>User Story + 验收标准 + 非功能需求 + MVP 范围与风险。</p>
+        <div class="links">
+          <span>HTML 在线</span>
+          <span>Markdown</span>
+        </div>
+      </a>
+
+      <a class="doc-card" href="./docs/high-level-design.html">
+        <div class="icon">🏗️</div>
+        <div class="label">High-level Design</div>
+        <h3>概要设计（C4 模型）</h3>
+        <p>System Context + Container + 双环分层架构 + 数据流 + 部署视图。</p>
+        <div class="links">
+          <span>HTML 在线</span>
+          <span>Markdown</span>
+        </div>
+      </a>
+
+      <a class="doc-card" href="./docs/detailed-design.html">
+        <div class="icon">🔧</div>
+        <div class="label">Detailed Design</div>
+        <h3>详细设计</h3>
+        <p>Director 状态机 + Shot Protocol schema + 关键算法 + ADR 完整版 + 测试策略。</p>
+        <div class="links">
+          <span>HTML 在线</span>
+          <span>Markdown</span>
+        </div>
+      </a>
+    </div>
+  </div>
+</section>
+
+<section>
+  <div class="container">
+    <h2>✨ MVP 能力亮点</h2>
+    <p class="section-sub">三大演示场景 · 端侧为主 · 云侧为备</p>
+
+    <div class="feature-grid">
+      <div class="feature">
+        <div class="icon">⚡</div>
+        <h4>Fast Loop · 实时闭环</h4>
+        <p>端侧 NPU 推理（场景识别 / 主体检测 / 跟踪）+ 系统级相机 API（AVFoundation），≤ 500ms 端到端。</p>
+      </div>
+      <div class="feature">
+        <div class="icon">🎨</div>
+        <h4>主动调色 · 不止建议</h4>
+        <p>Metal Shader 实时 LUT，根据脚本意图主动调整色温 / 对比度 / 饱和度，含肤色保护。</p>
+      </div>
+      <div class="feature">
+        <div class="icon">🧠</div>
+        <h4>Creative Loop · 云端大脑</h4>
+        <p>LLM 拆镜本 + MLLM 主体匹配 + 三维方向提示，1~3s 决策周期，断网可用预制脚本。</p>
+      </div>
+      <div class="feature">
+        <div class="icon">📐</div>
+        <h4>Shot Protocol · 镜头语言协议</h4>
+        <p>MCP-like 协议层把 LLM 输出转换成可执行的相机动作序列，schema 冻结、可扩展。</p>
+      </div>
+      <div class="feature">
+        <div class="icon">🎯</div>
+        <h4>三维方向提示</h4>
+        <p>下一镜头的拍摄主体在空间哪里？算法给出"向左 / 向右 / 请旋转手机寻找"提示并自动收敛。</p>
+      </div>
+      <div class="feature">
+        <div class="icon">🔒</div>
+        <h4>隐私优先</h4>
+        <p>用户视频与脚本完全本地存储；上传云侧的只有主题文本与裁剪后的主体小图（&lt; 50KB）。</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section>
+  <div class="container">
+    <h2>📅 实施里程碑</h2>
+    <p class="section-sub">每个里程碑独立可演示</p>
+
+    <div class="timeline">
+      <div class="timeline-item">
+        <div class="id">M0</div>
+        <div>
+          <div class="title">App 骨架 + Camera 预览 + 录制</div>
+          <div class="desc">能录视频</div>
+        </div>
+      </div>
+      <div class="timeline-item">
+        <div class="id">M1</div>
+        <div>
+          <div class="title">端侧 Vision Pipeline + PolicyEngine + Camera Driver</div>
+          <div class="desc">单镜头 AI 调参与调色</div>
+        </div>
+      </div>
+      <div class="timeline-item">
+        <div class="id">M2</div>
+        <div>
+          <div class="title">Director 状态机 + UI（HUD + 下一镜头卡）</div>
+          <div class="desc">单镜头完整闭环</div>
+        </div>
+      </div>
+      <div class="timeline-item">
+        <div class="id">M3</div>
+        <div>
+          <div class="title">Cloud Backend + Shot Protocol Client</div>
+          <div class="desc">LLM 拆镜本可用</div>
+        </div>
+      </div>
+      <div class="timeline-item">
+        <div class="id">M4</div>
+        <div>
+          <div class="title">Creative Loop + 主体匹配 + 方向提示</div>
+          <div class="desc">多镜头连续拍摄</div>
+        </div>
+      </div>
+      <div class="timeline-item">
+        <div class="id">M5</div>
+        <div>
+          <div class="title">演示三类场景 + Golden Path</div>
+          <div class="desc"><strong>MVP 完成 🎉</strong></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <p>📚 <a href="./docs/requirements-analysis.html">需求分析</a> · <a href="./docs/high-level-design.html">概要设计</a> · <a href="./docs/detailed-design.html">详细设计</a></p>
+  <p style="margin-top: 8px;">AIFilmer MVP · 2026 · 🎬</p>
+</footer>
+
+</body>
+</html>

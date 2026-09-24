@@ -1,0 +1,415 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AIFilmer MVP — 需求分析</title>
+<style>
+  :root {
+    --macaron-pink:   #FFD6E0;
+    --macaron-mint:   #C7F0DB;
+    --macaron-yellow: #FFF1B6;
+    --macaron-blue:   #C8E7FF;
+    --macaron-lilac:  #E3D6FF;
+    --macaron-peach:  #FFE0C2;
+    --text-primary:   #3A3A3A;
+    --text-secondary: #6B6B6B;
+    --bg-card:        #FFFFFF;
+    --bg-page:        #FFF9F5;
+    --border-soft:    #F0E6DC;
+    --shadow:         0 6px 24px rgba(220, 180, 150, 0.12);
+    --radius:         14px;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", "Helvetica Neue", "Microsoft YaHei", sans-serif;
+    background: var(--bg-page);
+    color: var(--text-primary);
+    line-height: 1.7;
+    padding: 32px 16px 80px;
+  }
+
+  .container { max-width: 980px; margin: 0 auto; }
+
+  header.hero {
+    background: linear-gradient(135deg, var(--macaron-pink) 0%, var(--macaron-peach) 35%, var(--macaron-yellow) 100%);
+    border-radius: var(--radius);
+    padding: 40px 36px;
+    margin-bottom: 32px;
+    box-shadow: var(--shadow);
+  }
+  header.hero h1 {
+    font-size: 32px;
+    font-weight: 700;
+    margin-bottom: 8px;
+    letter-spacing: -0.5px;
+  }
+  header.hero .subtitle {
+    font-size: 15px;
+    color: var(--text-secondary);
+    margin-bottom: 16px;
+  }
+  header.hero .meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    font-size: 13px;
+  }
+  header.hero .meta span {
+    background: rgba(255,255,255,0.7);
+    padding: 4px 12px;
+    border-radius: 20px;
+    color: var(--text-secondary);
+  }
+
+  h2 {
+    font-size: 22px;
+    font-weight: 700;
+    margin: 36px 0 16px;
+    padding-left: 14px;
+    border-left: 4px solid var(--macaron-pink);
+  }
+  h3 {
+    font-size: 17px;
+    font-weight: 600;
+    margin: 24px 0 10px;
+    color: #4A4A4A;
+  }
+
+  p { margin-bottom: 12px; color: var(--text-primary); }
+
+  .card {
+    background: var(--bg-card);
+    border-radius: var(--radius);
+    padding: 20px 24px;
+    margin: 14px 0;
+    box-shadow: var(--shadow);
+    border: 1px solid var(--border-soft);
+  }
+
+  .card.mint    { border-left: 4px solid var(--macaron-mint); }
+  .card.blue    { border-left: 4px solid var(--macaron-blue); }
+  .card.lilac   { border-left: 4px solid var(--macaron-lilac); }
+  .card.peach   { border-left: 4px solid var(--macaron-peach); }
+  .card.yellow  { border-left: 4px solid var(--macaron-yellow); }
+
+  table {
+    width: 100%;
+    border-collapse: separate;
+    border-spacing: 0;
+    margin: 14px 0;
+    background: var(--bg-card);
+    border-radius: var(--radius);
+    overflow: hidden;
+    box-shadow: var(--shadow);
+    font-size: 14px;
+  }
+  thead { background: var(--macaron-lilac); }
+  th {
+    text-align: left;
+    padding: 12px 16px;
+    font-weight: 600;
+    color: #3A3A3A;
+  }
+  td {
+    padding: 11px 16px;
+    border-top: 1px solid var(--border-soft);
+    color: var(--text-primary);
+  }
+  tbody tr:hover { background: #FFFCF8; }
+
+  ul, ol { padding-left: 24px; margin: 10px 0 14px; }
+  li { margin: 5px 0; }
+
+  .badge {
+    display: inline-block;
+    padding: 2px 10px;
+    border-radius: 10px;
+    font-size: 12px;
+    font-weight: 600;
+    margin-right: 6px;
+  }
+  .badge.in  { background: var(--macaron-mint); color: #2D6A4F; }
+  .badge.out { background: var(--macaron-pink); color: #9B2C5C; }
+  .badge.crit { background: #FAD2D2; color: #9B2C2C; }
+  .badge.high { background: var(--macaron-yellow); color: #8A6D1E; }
+  .badge.med  { background: var(--macaron-blue); color: #2C5C8A; }
+
+  .story {
+    background: var(--bg-card);
+    border-radius: var(--radius);
+    padding: 18px 22px;
+    margin: 12px 0;
+    box-shadow: var(--shadow);
+    border-left: 4px solid var(--macaron-mint);
+  }
+  .story .id {
+    display: inline-block;
+    background: var(--macaron-mint);
+    color: #2D6A4F;
+    padding: 2px 10px;
+    border-radius: 8px;
+    font-size: 12px;
+    font-weight: 700;
+    margin-bottom: 8px;
+  }
+  .story .title {
+    font-size: 16px;
+    font-weight: 600;
+    margin-bottom: 8px;
+  }
+  .story .desc {
+    color: var(--text-secondary);
+    margin-bottom: 10px;
+    font-size: 14px;
+  }
+  .story ul { font-size: 14px; }
+
+  code {
+    background: #F4ECE4;
+    padding: 1px 6px;
+    border-radius: 4px;
+    font-family: "SF Mono", Menlo, Consolas, monospace;
+    font-size: 13px;
+    color: #B4546F;
+  }
+
+  footer {
+    margin-top: 60px;
+    text-align: center;
+    color: var(--text-secondary);
+    font-size: 13px;
+  }
+  footer a { color: #B4546F; text-decoration: none; }
+</style>
+</head>
+<body>
+<div class="container">
+
+  <header class="hero">
+    <h1>🎬 AIFilmer MVP — 需求分析</h1>
+    <div class="subtitle">让 AI 接管"拍摄决策"，把 iPhone 变成自主摄影师</div>
+    <div class="meta">
+      <span>📄 v1.0 已批准</span>
+      <span>🎯 MVP 范围冻结</span>
+      <span>📱 iOS 旗舰机（iPhone 14+）</span>
+      <span>🤖 端云协同</span>
+    </div>
+  </header>
+
+  <h2>1. 项目背景与价值</h2>
+  <div class="card peach">
+    <p><strong>背景</strong>：视频拍摄已成为大众日常记录的基本方式，但拍出"具有观赏价值"的视频有很高技术门槛。绝大多数日常记录停留在"留影"阶段；短视频博主每天浪费大量精力在重复拍摄上，产生大量"废片"。</p>
+    <p><strong>产品愿景</strong>：AIFilmer 让 AI 接管拍摄决策——用户保留<strong>指向权</strong>，AI 保留<strong>拍摄权</strong>（构图、调色、参数、下一分镜、镜头语言）。</p>
+    <p><strong>MVP 价值主张</strong>：把"AI 摄影师"概念真正落到一台手机里，用最克制的功能集合证明"AI 自主拍摄"对真实拍摄体验有可感知的提升。</p>
+  </div>
+
+  <h2>2. 范围</h2>
+
+  <h3>✅ MVP 范围内（In-Scope）</h3>
+  <div class="card mint">
+    <ul>
+      <li><strong>设备</strong>：iOS 旗舰机（iPhone 14+），单设备</li>
+      <li><strong>算力</strong>：端侧为主（实时感知 + 微调），云侧为备（LLM 拆镜本、MLLM 主体匹配）</li>
+      <li><strong>交互</strong>：文字输入主题 + UI 推荐/确认/修改下一镜头</li>
+      <li><strong>拍摄</strong>：单设备多镜头连续拍摄（每个镜头由 AI 自主控制）</li>
+      <li><strong>录制</strong>：1080p 本地视频录制</li>
+      <li><strong>演示场景</strong>：人物特写 / 风景静物 / Vlog 中景</li>
+    </ul>
+  </div>
+
+  <h3>❌ MVP 范围外（Out-of-Scope）</h3>
+  <div class="card yellow">
+    <ul>
+      <li>语音交互（ASR / TTS / 多轮对话 / VAD）</li>
+      <li>防抖与抖动检测（依赖手机 OIS + EIS 系统级能力）</li>
+      <li>云台控制（DJI / 智云等）</li>
+      <li>手动接管模式（手动曝光 / 对焦 / 手动快门）</li>
+      <li>复杂运镜决策（推 / 拉 / 摇 / 移）</li>
+      <li>视频后期剪辑 / 拼接 / 调色后处理</li>
+      <li>Android 平台支持</li>
+      <li>多机位协同</li>
+    </ul>
+  </div>
+
+  <h2>3. 用户角色</h2>
+  <table>
+    <thead><tr><th>角色</th><th>描述</th><th>MVP 关注度</th></tr></thead>
+    <tbody>
+      <tr><td>C 端普通用户</td><td>想拍出更好看的日常视频，但缺乏摄影/剪辑能力</td><td>主要用户</td></tr>
+      <tr><td>短视频内容创作者</td><td>每天重复拍摄固定脚本，渴望降低废片率</td><td>主要用户</td></tr>
+      <tr><td>早期尝鲜者</td><td>关注 AI 拍摄新形态的 KOL / 评测</td><td>次要用户</td></tr>
+    </tbody>
+  </table>
+
+  <h2>4. 用户故事</h2>
+
+  <h3>Epic-1 主题输入与脚本生成</h3>
+  <div class="story">
+    <span class="id">US-1.1</span>
+    <div class="title">输入主题</div>
+    <div class="desc"><strong>作为</strong> C 端用户，<strong>我想要</strong>输入一段文字描述我想拍的主题，<strong>以便</strong>让 AI 帮我规划拍摄。</div>
+    <ul>
+      <li>主界面提供"主题输入框"+"生成脚本"按钮</li>
+      <li>5 秒内返回 2~8 个镜头的脚本</li>
+      <li>每个镜头以结构化卡片展示（镜号 / 类型 / 主体 / 时长 / 调色意图 / 镜头运动）</li>
+      <li>支持"查看详情 / 重新生成"</li>
+    </ul>
+  </div>
+
+  <div class="story">
+    <span class="id">US-1.2</span>
+    <div class="title">修改单个镜头</div>
+    <div class="desc"><strong>作为</strong> 用户，<strong>我想要</strong>对单个镜头不满意时单独修改它。</div>
+    <ul>
+      <li>每个镜头卡片有"修改"入口，支持自然语言指令（如"再近一点"）</li>
+      <li>修改只影响该镜头，3 秒内返回结果</li>
+    </ul>
+  </div>
+
+  <div class="story">
+    <span class="id">US-1.3</span>
+    <div class="title">整体重新生成</div>
+    <div class="desc">对整组镜头一键重新生成；支持撤销。</div>
+  </div>
+
+  <h3>Epic-2 镜头拍摄执行</h3>
+  <div class="story">
+    <span class="id">US-2.1</span>
+    <div class="title">启动第一个镜头</div>
+    <div class="desc">用户把镜头对准第一个镜头的拍摄主体并点击"开始"，AI 介入拍摄，HUD 实时显示 AI 当前决策。</div>
+  </div>
+
+  <div class="story">
+    <span class="id">US-2.2</span>
+    <div class="title">AI 自主调参</div>
+    <div class="desc">AI 在拍摄过程中自动调整曝光、白平衡、对焦等参数。调参不会"抽风"——参数变化有惯性，EV 死区 ±0.3 内不动作。主体跟踪 30 fps 下稳定。</div>
+  </div>
+
+  <div class="story">
+    <span class="id">US-2.3</span>
+    <div class="title">AI 主动调色</div>
+    <div class="desc">AI 根据脚本中的"调色意图"主动调色（不是建议）。调色平滑、有上限（色温 ≤ ±15%、饱和度 80~120%），不破坏肤色。整段共用一份 <code>StyleProfile</code>。</div>
+  </div>
+
+  <div class="story">
+    <span class="id">US-2.4</span>
+    <div class="title">AI 识别场景可视化</div>
+    <div class="desc">HUD 持续显示当前场景分类与主体描述，变化延迟 ≤ 500ms。</div>
+  </div>
+
+  <h3>Epic-3 多镜头连续拍摄</h3>
+  <div class="story">
+    <span class="id">US-3.1</span>
+    <div class="title">当前镜头完成 → 推荐下一镜头</div>
+    <div class="desc">当前镜头达到计划时长（±10%）时，自动弹出"下一镜头"提示卡。用户可手动"立即结束当前镜头"提前进入下一镜头。</div>
+  </div>
+
+  <div class="story">
+    <span class="id">US-3.2</span>
+    <div class="title">三维方向提示（核心差异化）</div>
+    <div class="desc">下一个镜头的拍摄主体在哪里？</div>
+    <ul>
+      <li>若主体已在画面内：提示"向左一点 / 向右一点 / 居中"</li>
+      <li>若主体不在画面内：提示"请向左/右/上/下旋转手机寻找：___"</li>
+      <li>提示具有<strong>收敛性</strong>：每给一次方向提示都基于"上一帧 → 当前帧"偏差</li>
+    </ul>
+  </div>
+
+  <div class="story">
+    <span class="id">US-3.3</span>
+    <div class="title">接受 / 跳过 / 修改下一镜头</div>
+    <div class="desc">提示卡提供三个动作：接受 / 跳过 / 修改。修改触发 LLM 重写该镜头。</div>
+  </div>
+
+  <h3>Epic-4 视频录制与本地存储</h3>
+  <div class="story">
+    <span class="id">US-4.1</span>
+    <div class="title">连续录制</div>
+    <div class="desc">从首个"开始"到最后一个镜头结束，全程连续录制。1080p / 30fps H.264，支持 ≥ 10 分钟。</div>
+  </div>
+
+  <div class="story">
+    <span class="id">US-4.2</span>
+    <div class="title">历史视频管理</div>
+    <div class="desc">"我的作品"列表页：缩略图 / 主题 / 时长；支持播放 / 删除（二次确认）。</div>
+  </div>
+
+  <h2>5. 非功能需求</h2>
+  <table>
+    <thead><tr><th>维度</th><th>指标</th><th>目标</th></tr></thead>
+    <tbody>
+      <tr><td rowspan="5">性能</td><td>Fast Loop 端到端延迟</td><td>≤ 500ms</td></tr>
+      <tr><td>场景识别 / 主体检测</td><td>≤ 50ms / 帧（端侧 NPU）</td></tr>
+      <tr><td>Creative Loop 决策周期</td><td>1~3s</td></tr>
+      <tr><td>LLM 拆镜本响应</td><td>≤ 5s</td></tr>
+      <tr><td>录制掉帧率</td><td>≤ 0.1%</td></tr>
+      <tr><td rowspan="2">可用性</td><td>学习成本</td><td>30 秒内理解主流程</td></tr>
+      <tr><td>主流程成功率</td><td>≥ 95%</td></tr>
+      <tr><td>兼容性</td><td>iOS / 设备</td><td>iOS 17+ / iPhone 14 系列起</td></tr>
+      <tr><td>隐私</td><td>视频数据</td><td>仅本地存储，不上传</td></tr>
+    </tbody>
+  </table>
+
+  <h2>6. 风险与缓解（高层视角）</h2>
+  <table>
+    <thead><tr><th>ID</th><th>风险点</th><th>等级</th><th>缓解措施</th></tr></thead>
+    <tbody>
+      <tr><td>R1</td><td>端到端延迟超预算</td><td><span class="badge crit">🔴 关键</span></td><td>严格端侧优先；Fast Loop 不依赖网络</td></tr>
+      <tr><td>R2</td><td>iOS 不同机型 API 不一致</td><td><span class="badge crit">🔴 关键</span></td><td>设备白名单 + CI 设备矩阵</td></tr>
+      <tr><td>R3</td><td>LLM 拆镜本输出不稳定</td><td><span class="badge crit">🔴 关键</span></td><td>JSON schema 严格校验 + retry + 模板兜底</td></tr>
+      <tr><td>R4</td><td>HUD 不显示 AI 在做什么</td><td><span class="badge high">🟡 高</span></td><td>强制 HUD 实时显示 AI 决策</td></tr>
+      <tr><td>R5</td><td>自动调参过度频繁</td><td><span class="badge high">🟡 高</span></td><td>调参有惯性 + EV 死区 ±0.3</td></tr>
+      <tr><td>R6</td><td>跟踪抖动</td><td><span class="badge high">🟡 高</span></td><td>卡尔曼 / EMA 平滑</td></tr>
+      <tr><td>R7</td><td>调色导致肤色失真</td><td><span class="badge high">🟡 高</span></td><td>LUT 参数有上限</td></tr>
+      <tr><td>R8</td><td>LLM API 成本不可控</td><td><span class="badge med">🟢 中</span></td><td>模板快路径 + 本地小模型 + 用户配额</td></tr>
+      <tr><td>R9</td><td>端侧模型分发</td><td><span class="badge med">🟢 中</span></td><td>按需下载 + 热更新</td></tr>
+      <tr><td>R10</td><td>录制与推理争资源</td><td><span class="badge med">🟢 中</span></td><td>录制降级 + NPU 隔离 + 内存预算</td></tr>
+    </tbody>
+  </table>
+
+  <h2>7. 验收标准（MVP Done 定义）</h2>
+  <div class="card lilac">
+    <ol>
+      <li>所有 User Story 验收标准全部通过</li>
+      <li>三类演示场景连续拍摄成功率 ≥ 90%</li>
+      <li>Fast Loop 端到端延迟 ≤ 500ms（白名单设备）</li>
+      <li>App 通过 TestFlight 内测</li>
+      <li>通过隐私合规与 App Store 上架审核</li>
+      <li>完整的文档与 HTML 页面就绪</li>
+    </ol>
+  </div>
+
+  <h2>8. 后续版本路线图</h2>
+  <table>
+    <thead><tr><th>版本</th><th>主题</th><th>关键能力</th></tr></thead>
+    <tbody>
+      <tr><td>v1.1</td><td>语音交互</td><td>ASR / TTS / 多轮对话 / VAD 打断</td></tr>
+      <tr><td>v1.2</td><td>云台支持</td><td>DJI / 智云 SDK 适配，AI 主动运镜</td></tr>
+      <tr><td>v1.3</td><td>Android</td><td>双端交付</td></tr>
+      <tr><td>v2.0</td><td>后期剪辑</td><td>AI 自动拼接 / 调色 / 配乐</td></tr>
+    </tbody>
+  </table>
+
+  <h2>附录：术语表</h2>
+  <div class="card blue">
+    <ul>
+      <li><strong>Fast Loop</strong>：端侧实时感知与微调闭环（≤ 500ms）</li>
+      <li><strong>Creative Loop</strong>：云侧/端侧协同的创意决策闭环（1~3s）</li>
+      <li><strong>Shot Protocol</strong>：LLM 输出到执行层的协议层（MCP-like）</li>
+      <li><strong>StyleProfile</strong>：整段视频共用的调色风格基线</li>
+      <li><strong>LUT</strong>：Look-Up Table，色彩查找表</li>
+      <li><strong>NPU</strong>：Neural Processing Unit，端侧神经网络加速器</li>
+    </ul>
+  </div>
+
+  <footer>
+    <p>📚 相关文档：<a href="./high-level-design.html">概要设计</a> · <a href="./detailed-design.html">详细设计</a></p>
+    <p style="margin-top: 10px;">AIFilmer MVP · 2026</p>
+  </footer>
+
+</div>
+</body>
+</html>

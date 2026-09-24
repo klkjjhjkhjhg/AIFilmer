@@ -1,0 +1,587 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AIFilmer MVP — 概要设计（C4 模型）</title>
+<style>
+  :root {
+    --macaron-pink:   #FFD6E0;
+    --macaron-mint:   #C7F0DB;
+    --macaron-yellow: #FFF1B6;
+    --macaron-blue:   #C8E7FF;
+    --macaron-lilac:  #E3D6FF;
+    --macaron-peach:  #FFE0C2;
+    --text-primary:   #3A3A3A;
+    --text-secondary: #6B6B6B;
+    --bg-card:        #FFFFFF;
+    --bg-page:        #FFF9F5;
+    --border-soft:    #F0E6DC;
+    --shadow:         0 6px 24px rgba(220, 180, 150, 0.12);
+    --radius:         14px;
+    --code-bg:        #F8F0E8;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", "Helvetica Neue", "Microsoft YaHei", sans-serif;
+    background: var(--bg-page);
+    color: var(--text-primary);
+    line-height: 1.7;
+    padding: 32px 16px 80px;
+  }
+  .container { max-width: 1080px; margin: 0 auto; }
+
+  header.hero {
+    background: linear-gradient(135deg, var(--macaron-blue) 0%, var(--macaron-lilac) 50%, var(--macaron-mint) 100%);
+    border-radius: var(--radius);
+    padding: 40px 36px;
+    margin-bottom: 32px;
+    box-shadow: var(--shadow);
+  }
+  header.hero h1 { font-size: 32px; font-weight: 700; margin-bottom: 8px; letter-spacing: -0.5px; }
+  header.hero .subtitle { font-size: 15px; color: var(--text-secondary); margin-bottom: 16px; }
+  header.hero .meta { display: flex; flex-wrap: wrap; gap: 10px; font-size: 13px; }
+  header.hero .meta span {
+    background: rgba(255,255,255,0.7);
+    padding: 4px 12px;
+    border-radius: 20px;
+    color: var(--text-secondary);
+  }
+
+  h2 {
+    font-size: 22px;
+    font-weight: 700;
+    margin: 40px 0 16px;
+    padding-left: 14px;
+    border-left: 4px solid var(--macaron-blue);
+  }
+  h3 {
+    font-size: 17px;
+    font-weight: 600;
+    margin: 22px 0 10px;
+    color: #4A4A4A;
+  }
+
+  p { margin-bottom: 12px; }
+
+  .card {
+    background: var(--bg-card);
+    border-radius: var(--radius);
+    padding: 20px 24px;
+    margin: 14px 0;
+    box-shadow: var(--shadow);
+    border: 1px solid var(--border-soft);
+  }
+  .card.mint   { border-left: 4px solid var(--macaron-mint); }
+  .card.blue   { border-left: 4px solid var(--macaron-blue); }
+  .card.lilac  { border-left: 4px solid var(--macaron-lilac); }
+  .card.peach  { border-left: 4px solid var(--macaron-peach); }
+  .card.yellow { border-left: 4px solid var(--macaron-yellow); }
+
+  .diagram {
+    background: var(--bg-card);
+    border-radius: var(--radius);
+    padding: 24px;
+    margin: 14px 0;
+    box-shadow: var(--shadow);
+    overflow-x: auto;
+    border: 1px solid var(--border-soft);
+  }
+  .diagram pre {
+    font-family: "SF Mono", Menlo, Consolas, monospace;
+    font-size: 12.5px;
+    line-height: 1.55;
+    color: var(--text-primary);
+    white-space: pre;
+  }
+
+  table {
+    width: 100%;
+    border-collapse: separate;
+    border-spacing: 0;
+    margin: 14px 0;
+    background: var(--bg-card);
+    border-radius: var(--radius);
+    overflow: hidden;
+    box-shadow: var(--shadow);
+    font-size: 14px;
+  }
+  thead { background: var(--macaron-lilac); }
+  th { text-align: left; padding: 12px 16px; font-weight: 600; }
+  td {
+    padding: 11px 16px;
+    border-top: 1px solid var(--border-soft);
+    vertical-align: top;
+  }
+  tbody tr:hover { background: #FFFCF8; }
+
+  .badge {
+    display: inline-block;
+    padding: 2px 10px;
+    border-radius: 10px;
+    font-size: 12px;
+    font-weight: 600;
+  }
+  .badge.online  { background: var(--macaron-mint); color: #2D6A4F; }
+  .badge.offline { background: var(--macaron-pink); color: #9B2C5C; }
+  .badge.degrade { background: var(--macaron-yellow); color: #8A6D1E; }
+  .badge.c4l1 { background: var(--macaron-blue); color: #2C5C8A; }
+  .badge.c4l2 { background: var(--macaron-lilac); color: #5C4D8A; }
+
+  code {
+    background: var(--code-bg);
+    padding: 1px 6px;
+    border-radius: 4px;
+    font-family: "SF Mono", Menlo, Consolas, monospace;
+    font-size: 13px;
+    color: #B4546F;
+  }
+
+  .adr {
+    background: var(--bg-card);
+    border-radius: var(--radius);
+    padding: 18px 22px;
+    margin: 14px 0;
+    box-shadow: var(--shadow);
+    border-left: 4px solid var(--macaron-peach);
+  }
+  .adr .id { font-weight: 700; color: #9B5C2C; margin-bottom: 6px; }
+  .adr .label { font-size: 12px; color: var(--text-secondary); margin-bottom: 10px; }
+  .adr ul { font-size: 14px; padding-left: 20px; }
+
+  .toc {
+    background: var(--bg-card);
+    border-radius: var(--radius);
+    padding: 18px 24px;
+    margin-bottom: 28px;
+    box-shadow: var(--shadow);
+    border: 1px solid var(--border-soft);
+    font-size: 14px;
+  }
+  .toc h3 { margin-top: 0; margin-bottom: 8px; font-size: 15px; }
+  .toc ol { padding-left: 22px; columns: 2; }
+  .toc a { color: #B4546F; text-decoration: none; }
+  .toc a:hover { text-decoration: underline; }
+
+  footer {
+    margin-top: 60px;
+    text-align: center;
+    color: var(--text-secondary);
+    font-size: 13px;
+  }
+  footer a { color: #B4546F; text-decoration: none; }
+</style>
+</head>
+<body>
+<div class="container">
+
+  <header class="hero">
+    <h1>🏗️ AIFilmer MVP — 概要设计</h1>
+    <div class="subtitle">C4 模型 · 双环分层 · 端云协同</div>
+    <div class="meta">
+      <span>📄 v1.0</span>
+      <span><span class="badge c4l1">C4 L1</span> System Context</span>
+      <span><span class="badge c4l2">C4 L2</span> Container</span>
+      <span>📱 iOS 17+</span>
+    </div>
+  </header>
+
+  <div class="toc">
+    <h3>📑 目录</h3>
+    <ol>
+      <li><a href="#sec1">系统上下文</a></li>
+      <li><a href="#sec2">容器视图</a></li>
+      <li><a href="#sec3">iOS App 内部容器</a></li>
+      <li><a href="#sec4">Cloud Backend 容器</a></li>
+      <li><a href="#sec5">关键架构决策</a></li>
+      <li><a href="#sec6">降级策略</a></li>
+      <li><a href="#sec7">数据流</a></li>
+      <li><a href="#sec8">部署视图</a></li>
+      <li><a href="#sec9">跨切关注点</a></li>
+      <li><a href="#sec10">总结</a></li>
+    </ol>
+  </div>
+
+  <h2 id="sec0">0. 一句话定位</h2>
+  <div class="card peach">
+    <p><strong>AIFilmer MVP = 一款 iOS 旗舰 App，让 AI 接管"拍摄决策"，把 iPhone 变成自主摄影师。</strong>用户保留指向权（手持移动设备），AI 保留拍摄权（构图、调色、参数、下一分镜、镜头语言）。LLM 在云侧生成"镜头语言协议"（MCP-like 协议），端侧执行。</p>
+  </div>
+
+  <h2 id="sec1">1. C4 Level 1 — 系统上下文</h2>
+
+  <div class="diagram"><pre>                    ┌─────────────────────────────────────────────┐
+                    │              AIFilmer System                │
+                    │                                             │
+   ┌─────────┐      │   ┌─────────────┐       ┌──────────────┐   │
+   │  C 端    │ ───► │   │  iOS App    │ ───► │  Cloud       │   │
+   │  用户    │      │   │  (iPhone)   │      │  Backend     │   │
+   └─────────┘      │   └─────────────┘       └──────────────┘   │
+                    │         ▲                       ▲            │
+                    │         │                       │            │
+                    │   ┌─────────────┐       ┌──────────────┐     │
+                    │   │ Camera /    │       │ LLM Service  │     │
+                    │   │ Mic / IMU   │       │ (GPT-4o /    │     │
+                    │   │ (iPhone)    │       │  Qwen-VL)    │     │
+                    │   └─────────────┘       └──────────────┘     │
+                    │                                             │
+   ┌─────────┐      │                                             │
+   │ App     │ ───► │   用户作品 / 反馈                            │
+   │ Store   │      │                                             │
+   └─────────┘      └─────────────────────────────────────────────┘</pre></div>
+
+  <h3>外部 Actor / 系统</h3>
+  <table>
+    <thead><tr><th>外部实体</th><th>类型</th><th>描述</th></tr></thead>
+    <tbody>
+      <tr><td>C 端用户</td><td>Actor</td><td>拍摄主题输入、镜头指向、确认下一镜头</td></tr>
+      <tr><td>iOS 系统服务</td><td>System</td><td>AVFoundation（相机）、Core ML（端侧推理）、Metal（GPU）</td></tr>
+      <tr><td>LLM 服务</td><td>System</td><td>提供脚本生成、主体匹配、方向提示的云侧大模型</td></tr>
+      <tr><td>App Store</td><td>System</td><td>分发渠道与合规审核</td></tr>
+    </tbody>
+  </table>
+
+  <h2 id="sec2">2. C4 Level 2 — 容器视图</h2>
+
+  <div class="diagram"><pre>┌──────────────────────────────────────────────────────────────────┐
+│                          iOS App                                 │
+│                                                                  │
+│  ┌────────────────┐    ┌─────────────────┐    ┌───────────────┐  │
+│  │ Presentation   │    │ Director        │    │ Capability    │  │
+│  │ (SwiftUI)      │ ─► │ (双环 + 状态机) │ ─► │ Layer         │  │
+│  │                │ ◄─ │                 │ ◄─ │               │  │
+│  └────────────────┘    └─────────────────┘    └───────────────┘  │
+│                                                     │            │
+│  ┌─────────────────────────────────────────────────┐│            │
+│  │ Shot Protocol Client (本地)                     ││            │
+│  └─────────────────────────────────────────────────┘│            │
+└─────────────────────────────────────────────────────┼────────────┘
+                                                      │
+                                                      │ HTTPS
+                                                      ▼
+┌──────────────────────────────────────────────────────────────────┐
+│                    Cloud Backend (MVP简化)                       │
+│                                                                  │
+│  ┌──────────────────┐  ┌──────────────────┐  ┌───────────────┐  │
+│  │ ShotScript       │  │ SubjectMatch     │  │ DirectionHint │  │
+│  │ Service          │  │ Service          │  │ Service       │  │
+│  └──────────────────┘  └──────────────────┘  └───────────────┘  │
+│           │                       │                    │          │
+│           └───────────────────────┼────────────────────┘          │
+│                                   ▼                               │
+│                  ┌─────────────────────────────┐                 │
+│                  │  Shot Protocol Registry     │                 │
+│                  └─────────────────────────────┘                 │
+└──────────────────────────────────────────────────────────────────┘</pre></div>
+
+  <h3>容器清单</h3>
+  <table>
+    <thead><tr><th>容器</th><th>部署位置</th><th>职责</th><th>技术选型</th></tr></thead>
+    <tbody>
+      <tr><td><strong>iOS App</strong></td><td>用户设备</td><td>UI / 双环 / 端侧推理 / 拍摄执行</td><td>Swift 5.9+, SwiftUI, AVFoundation, Core ML, Metal</td></tr>
+      <tr><td><strong>Cloud Backend</strong></td><td>云服务</td><td>脚本生成、主体匹配、方向提示 + 协议层</td><td>Python + FastAPI（建议）</td></tr>
+      <tr><td><strong>LLM Service</strong></td><td>第三方</td><td>底层大模型推理能力</td><td>OpenAI / Anthropic / Qwen</td></tr>
+    </tbody>
+  </table>
+
+  <div class="card yellow">
+    <p><strong>⚠️ 注意</strong>：MVP 不做"原生后端 + 第三方 LLM"的双层架构，<strong>Cloud Backend 直接代理 LLM 调用</strong>，避免 MVP 阶段过度分层。</p>
+  </div>
+
+  <h2 id="sec3">3. iOS App 内部 Container</h2>
+
+  <div class="diagram"><pre>┌─────────────────────────────────────────────────────────────┐
+│                          iOS App                             │
+│                                                             │
+│  ┌───────────────────────────────────────────────────────┐  │
+│  │                   Presentation (SwiftUI)              │  │
+│  │  · ThemeInput    · ShotList     · CameraPreview+HUD   │  │
+│  │  · NextShotCard  · HistoryList                         │  │
+│  └───────────────────────────────────────────────────────┘  │
+│                          ▲                                  │
+│                          │ 用户事件                         │
+│  ┌───────────────────────┼────────────────────────────────┐  │
+│  │              Director (双环 + 状态机)                  │  │
+│  │  ┌────────────────┐  ┌──────────────────────────────┐ │  │
+│  │  │  Fast Loop     │  │  Creative Loop                │ │  │
+│  │  │  · 30Hz        │  │  · 0.3~0.5Hz                  │ │  │
+│  │  │  · 端侧 NPU    │  │  · 云端 LLM 调用              │ │  │
+│  │  └────────────────┘  └──────────────────────────────┘ │  │
+│  └────────────────────────────────────────────────────────┘  │
+│                          ▲                                  │
+│                          │ 消息                              │
+│  ┌───────────────────────┼────────────────────────────────┐  │
+│  │                Capability Layer                         │  │
+│  │  ┌─────────┐ ┌──────────┐ ┌──────────┐ ┌────────────┐ │  │
+│  │  │ Vision  │ │ Camera   │ │ Color    │ │ Shot       │ │  │
+│  │  │Pipeline │ │ Driver   │ │ Engine   │ │ Protocol   │ │  │
+│  │  │(端侧)   │ │(AVFound.)│ │(Metal)   │ │ Client     │ │  │
+│  │  └─────────┘ └──────────┘ └──────────┘ └────────────┘ │  │
+│  │  ┌──────────────┐ ┌──────────────────────────────────┐ │  │
+│  │  │ StyleProfile │ │ ModelManager                     │ │  │
+│  │  └──────────────┘ └──────────────────────────────────┘ │  │
+│  └────────────────────────────────────────────────────────┘  │</pre></div>
+
+  <h3>容器职责边界</h3>
+  <table>
+    <thead><tr><th>容器</th><th>职责</th><th>不做什么</th></tr></thead>
+    <tbody>
+      <tr><td><strong>Presentation</strong></td><td>UI 渲染、用户事件、HUD 显示</td><td>不做 AI 决策、不持有业务状态</td></tr>
+      <tr><td><strong>Director</strong></td><td>双环编排、状态机、消息路由</td><td>不做具体 AI 推理与相机控制</td></tr>
+      <tr><td><strong>Capability Layer</strong></td><td>端侧模型推理、相机 API、调色 shader、协议客户端</td><td>不做业务编排</td></tr>
+      <tr><td><strong>Cloud Backend</strong></td><td>LLM 代理、协议服务化</td><td>不持有用户视频 / 脚本</td></tr>
+    </tbody>
+  </table>
+
+  <h2 id="sec4">4. Cloud Backend 内部</h2>
+
+  <div class="diagram"><pre>┌──────────────────────────────────────────────────────────────┐
+│                     Cloud Backend                             │
+│                                                              │
+│  ┌──────────────────────────────────────────────────────┐    │
+│  │  API Gateway (FastAPI)                                │    │
+│  │  · POST /scripts/generate                             │    │
+│  │  · POST /scripts/{id}/shot/{idx}/regenerate          │    │
+│  │  · POST /subjects/match                              │    │
+│  │  · POST /hints/direction                             │    │
+│  └──────────────────────────────────────────────────────┘    │
+│                          │                                   │
+│  ┌───────────────────────┼───────────────────────────────┐   │
+│  │        Service Layer                                │   │
+│  │  ┌──────────────┐  ┌──────────────┐  ┌────────────┐  │   │
+│  │  │ ShotScript   │  │ SubjectMatch │  │ Direction  │  │   │
+│  │  │ Service      │  │ Service      │  │ Hint       │  │   │
+│  │  │ (LLM)        │  │ (MLLM)       │  │ Service    │  │   │
+│  │  └──────────────┘  └──────────────┘  └────────────┘  │   │
+│  │           │                │                │          │   │
+│  │           └────────────────┼────────────────┘          │   │
+│  │                            ▼                           │   │
+│  │           ┌─────────────────────────────┐              │   │
+│  │           │  Shot Protocol Registry     │              │   │
+│  │           │  · Tool 定义 / Schema 校验  │              │   │
+│  │           │  · 模板快路径                │              │   │
+│  │           └─────────────────────────────┘              │   │
+│  │                            │                           │   │
+│  │                            ▼                           │   │
+│  │           ┌─────────────────────────────┐              │   │
+│  │           │  LLM Provider Adapter       │              │   │
+│  │           │  · OpenAI / Anthropic /     │              │   │
+│  │           │    Qwen 统一接口            │              │   │
+│  │           └─────────────────────────────┘              │   │
+│  └───────────────────────────────────────────────────────┘   │</pre></div>
+
+  <h2 id="sec5">5. 关键架构决策</h2>
+
+  <div class="adr">
+    <div class="id">ADR-001 · 双环分层架构</div>
+    <div class="label">决策 / 理由 / 影响</div>
+    <ul>
+      <li><strong>决策</strong>：Fast Loop（≤ 500ms，端侧）与 Creative Loop（1~3s，云云协同）物理隔离，通过共享状态通信。</li>
+      <li><strong>理由</strong>：满足延迟预算；端云分层清晰；扩展性好。</li>
+      <li><strong>影响</strong>：Director 必须是无锁的纯消息路由；Capability Layer 接口要稳定。</li>
+    </ul>
+  </div>
+
+  <div class="adr">
+    <div class="id">ADR-002 · 端侧优先 + 云侧可选</div>
+    <div class="label">决策 / 理由 / 影响</div>
+    <ul>
+      <li><strong>决策</strong>：所有能力标记 Online-Required / Online-Optional / Offline-Only；MVP 不允许 Online-Required 阻塞主流程。</li>
+      <li><strong>理由</strong>：断网时核心拍摄能力必须可用。</li>
+      <li><strong>影响</strong>：脚本生成、主体匹配、方向提示在断网时降级（见 §6）。</li>
+    </ul>
+  </div>
+
+  <div class="adr">
+    <div class="id">ADR-003 · Shot Protocol 协议先行</div>
+    <div class="label">决策 / 理由 / 影响</div>
+    <ul>
+      <li><strong>决策</strong>：定义 MCP-like 协议，所有 LLM 输出必须遵守；协议 schema 冻结。</li>
+      <li><strong>理由</strong>：协议稳定后再扩展能力，避免每加一个能力重写 LLM 输出。</li>
+      <li><strong>影响</strong>：见 <a href="./detailed-design.html">详细设计 §4</a>。</li>
+    </ul>
+  </div>
+
+  <div class="adr">
+    <div class="id">ADR-004 · 设备白名单</div>
+    <div class="label">决策 / 理由 / 影响</div>
+    <ul>
+      <li><strong>决策</strong>：MVP 仅在 iPhone 14 及以上 iOS 17+ 设备上保证完整能力。</li>
+      <li><strong>理由</strong>：不同 iPhone 机型 AVFoundation 行为差异巨大；MVP 不为兼容性牺牲体验。</li>
+      <li><strong>影响</strong>：App 启动时检测设备能力，不达标给出明确提示。</li>
+    </ul>
+  </div>
+
+  <h2 id="sec6">6. 降级策略</h2>
+
+  <h3>6.1 网络降级</h3>
+  <table>
+    <thead><tr><th>能力</th><th>在线</th><th>离线</th></tr></thead>
+    <tbody>
+      <tr><td>LLM 拆镜本</td><td><span class="badge online">✅ 正常</span></td><td><span class="badge degrade">⚠️ 用预制模板（3 套）</span></td></tr>
+      <tr><td>MLLM 主体匹配</td><td><span class="badge online">✅ 正常</span></td><td><span class="badge degrade">⚠️ 端侧轻量匹配（精度低）</span></td></tr>
+      <tr><td>云侧三维方向生成</td><td><span class="badge online">✅ 正常</span></td><td><span class="badge degrade">⚠️ 仅"画面内相对位置"</span></td></tr>
+      <tr><td>LLM 镜头修改</td><td><span class="badge online">✅ 正常</span><td><span class="badge offline">❌ 不支持</span></td></tr>
+      <tr><td>端侧自动调参 / 调色</td><td><span class="badge online">✅ 正常</span></td><td><span class="badge online">✅ 正常</span></td></tr>
+    </tbody>
+  </table>
+
+  <h3>6.2 设备能力降级</h3>
+  <table>
+    <thead><tr><th>设备不达标</th><th>表现</th></tr></thead>
+    <tbody>
+      <tr><td>NPU 不可用</td><td>端侧推理降级为 CPU 模式（延迟升高）</td></tr>
+      <tr><td>不支持 <code>videoZoomFactor</code></td><td>禁用数字变焦提示</td></tr>
+      <tr><td>不支持 AE/AV 自定义</td><td>提示用户开启"手动接管"（MVP 不支持）</td></tr>
+    </tbody>
+  </table>
+
+  <h2 id="sec7">7. 数据流（核心场景）</h2>
+
+  <h3>场景 A：用户输入主题 → 生成镜本</h3>
+  <div class="diagram"><pre>[Presentation] --input--&gt;[Director] --generate_script--&gt; [Shot Protocol Client]
+                                                              │
+                                                              │ HTTPS POST
+                                                              ▼
+                                                       [Cloud Backend]
+                                                              │
+                                                       [LLM Provider]
+                                                              │
+                                                       ◄──── ShotSpec JSON
+                                                              │
+                                                       [Shot Protocol Registry]
+                                                       · 校验 schema
+                                                       · retry if invalid
+                                                              │
+                                                              ▼
+[Director] &lt;--ShotSpec--[Presentation] --render cards--&gt;</pre></div>
+
+  <h3>场景 B：单镜头拍摄</h3>
+  <div class="diagram"><pre>[Camera (AVFoundation)] --frame (30fps)--&gt; [Vision Pipeline]
+                                              │
+                                              │ scene / subject / track
+                                              ▼
+                                          [Fast Loop]
+                                              │
+                                              │ camera_action + subject_state
+                                              ▼
+                                          [Director SharedState]
+                                              │
+                  ┌───────────────────────────┼───────────────────────────┐
+                  ▼                           ▼                           ▼
+           [Camera Driver]            [Color Engine]            [Presentation HUD]
+           · setExposureOffset         · 更新 LUT 参数        · 渲染决策文本
+           · setFocusPoint             · Metal shader 编译
+           · setWhiteBalanceMode</pre></div>
+
+  <h3>场景 C：推荐下一镜头</h3>
+  <div class="diagram"><pre>[Director] --shot_duration_reached--&gt; [Creative Loop]
+                                              │
+                                              │ next_shot_spec + current_frame
+                                              ▼
+                                  [Shot Protocol Client]
+                                              │ HTTPS
+                                              ▼
+                                   [SubjectMatch Service]
+                                              │
+                                              │ matched_subject_id (or null)
+                                              ▼
+                                  [Director]
+                                              │
+                                              │ compute_direction
+                                              ▼
+                          [Presentation] --render next_shot_card--&gt;</pre></div>
+
+  <h2 id="sec8">8. 部署视图</h2>
+
+  <div class="diagram"><pre>┌──────────────────────────────────────────┐
+│            用户环境                      │
+│   ┌──────────────────────────────────┐   │
+│   │  iPhone (iOS 17+)                │   │
+│   │  · AIFilmer App · ~80MB          │   │
+│   │  · 端侧模型（按需下载）~50MB    │   │
+│   └──────────────────────────────────┘   │
+└──────────────────────────────────────────┘
+                  │
+                  │ HTTPS
+                  ▼
+┌──────────────────────────────────────────┐
+│            云侧                          │
+│   ┌──────────────────────────────────┐   │
+│   │  Cloud Backend                   │   │
+│   │  · FastAPI                       │   │
+│   │  · 部署在单云厂商（建议 Aliyun） │   │
+│   │  · MVP 不需要多区域              │   │
+│   └──────────────────────────────────┘   │
+│                  │                       │
+│                  │ HTTPS                 │
+│                  ▼                       │
+│   ┌──────────────────────────────────┐   │
+│   │  LLM Provider                   │   │
+│   │  · OpenAI / Anthropic / Qwen    │   │
+│   └──────────────────────────────────┘   │
+└──────────────────────────────────────────┘</pre></div>
+
+  <table>
+    <thead><tr><th>指标</th><th>目标</th></tr></thead>
+    <tbody>
+      <tr><td>App 包大小</td><td>≤ 80MB（不含端侧模型）</td></tr>
+      <tr><td>端侧模型总大小</td><td>≤ 50MB（按场景下载）</td></tr>
+      <tr><td>后端 P95 延迟</td><td>≤ 5s（拆镜本）/ ≤ 2s（主体匹配）</td></tr>
+      <tr><td>后端可用性</td><td>≥ 99%（MVP 简化 SLO）</td></tr>
+    </tbody>
+  </table>
+
+  <h2 id="sec9">9. 跨切关注点</h2>
+
+  <h3>9.1 可观测性</h3>
+  <div class="card mint">
+    <ul>
+      <li><strong>客户端</strong>：本地日志 + 关键事件埋点（无埋点上报，保护隐私）</li>
+      <li><strong>服务端</strong>：调用日志、LLM token 消耗、错误率</li>
+      <li><strong>演示场景</strong>：三类场景各保留一组"黄金路径"录制视频，便于回归</li>
+    </ul>
+  </div>
+
+  <h3>9.2 安全与隐私</h3>
+  <div class="card blue">
+    <ul>
+      <li>App 端视频<strong>全部本地存储</strong></li>
+      <li>上传云侧的只有：脚本生成请求（主题文本）+ 主体匹配请求（裁剪后的主体小图）</li>
+      <li>LLM API Key 仅在后端持有，不下发到客户端</li>
+      <li>iOS 端遵守 Apple 隐私政策</li>
+    </ul>
+  </div>
+
+  <h3>9.3 性能</h3>
+  <div class="card lilac">
+    <ul>
+      <li>Fast Loop 延迟预算：500ms（Camera capture 50ms + Inference 50ms + Driver 100ms + Buffer 300ms）</li>
+      <li>Creative Loop 决策周期：1~3s</li>
+      <li>录制降级：1080p / 30fps（不抢 NPU）</li>
+    </ul>
+  </div>
+
+  <h2 id="sec10">10. 总结</h2>
+  <table>
+    <thead><tr><th>维度</th><th>决策</th></tr></thead>
+    <tbody>
+      <tr><td>架构形态</td><td>C4 Level 2：iOS App + Cloud Backend + LLM Provider</td></tr>
+      <tr><td>核心模式</td><td>双环分层（Fast Loop + Creative Loop）</td></tr>
+      <tr><td>通信协议</td><td>HTTPS REST + Shot Protocol（应用层）</td></tr>
+      <tr><td>关键技术选型</td><td>Swift / SwiftUI / AVFoundation / Core ML / Metal / FastAPI</td></tr>
+      <tr><td>MVP 边界</td><td>iOS 17+，iPhone 14+，单设备，三类演示场景</td></tr>
+    </tbody>
+  </table>
+
+  <div class="card peach">
+    <p>📚 <strong>下一步</strong>：阅读 <a href="./detailed-design.html">详细设计</a> 了解 Director 状态机、Shot Protocol schema、模块接口与算法细节。</p>
+  </div>
+
+  <footer>
+    <p>📚 相关文档：<a href="./requirements-analysis.html">需求分析</a> · <a href="./detailed-design.html">详细设计</a></p>
+    <p style="margin-top: 10px;">AIFilmer MVP · 2026</p>
+  </footer>
+
+</div>
+</body>
+</html>

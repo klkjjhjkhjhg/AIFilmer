@@ -1,0 +1,809 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AIFilmer MVP — 详细设计</title>
+<style>
+  :root {
+    --macaron-pink:   #FFD6E0;
+    --macaron-mint:   #C7F0DB;
+    --macaron-yellow: #FFF1B6;
+    --macaron-blue:   #C8E7FF;
+    --macaron-lilac:  #E3D6FF;
+    --macaron-peach:  #FFE0C2;
+    --text-primary:   #3A3A3A;
+    --text-secondary: #6B6B6B;
+    --bg-card:        #FFFFFF;
+    --bg-page:        #FFF9F5;
+    --border-soft:    #F0E6DC;
+    --shadow:         0 6px 24px rgba(220, 180, 150, 0.12);
+    --radius:         14px;
+    --code-bg:        #F8F0E8;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", "Helvetica Neue", "Microsoft YaHei", sans-serif;
+    background: var(--bg-page);
+    color: var(--text-primary);
+    line-height: 1.7;
+    padding: 32px 16px 80px;
+  }
+  .container { max-width: 1080px; margin: 0 auto; }
+
+  header.hero {
+    background: linear-gradient(135deg, var(--macaron-mint) 0%, var(--macaron-blue) 50%, var(--macaron-yellow) 100%);
+    border-radius: var(--radius);
+    padding: 40px 36px;
+    margin-bottom: 32px;
+    box-shadow: var(--shadow);
+  }
+  header.hero h1 { font-size: 32px; font-weight: 700; margin-bottom: 8px; letter-spacing: -0.5px; }
+  header.hero .subtitle { font-size: 15px; color: var(--text-secondary); margin-bottom: 16px; }
+  header.hero .meta { display: flex; flex-wrap: wrap; gap: 10px; font-size: 13px; }
+  header.hero .meta span {
+    background: rgba(255,255,255,0.7);
+    padding: 4px 12px;
+    border-radius: 20px;
+    color: var(--text-secondary);
+  }
+
+  h2 {
+    font-size: 22px;
+    font-weight: 700;
+    margin: 40px 0 16px;
+    padding-left: 14px;
+    border-left: 4px solid var(--macaron-mint);
+  }
+  h3 {
+    font-size: 17px;
+    font-weight: 600;
+    margin: 22px 0 10px;
+    color: #4A4A4A;
+  }
+  h4 {
+    font-size: 15px;
+    font-weight: 600;
+    margin: 16px 0 8px;
+    color: #5A5A5A;
+  }
+
+  p { margin-bottom: 12px; }
+
+  .card {
+    background: var(--bg-card);
+    border-radius: var(--radius);
+    padding: 20px 24px;
+    margin: 14px 0;
+    box-shadow: var(--shadow);
+    border: 1px solid var(--border-soft);
+  }
+  .card.mint   { border-left: 4px solid var(--macaron-mint); }
+  .card.blue   { border-left: 4px solid var(--macaron-blue); }
+  .card.lilac  { border-left: 4px solid var(--macaron-lilac); }
+  .card.peach  { border-left: 4px solid var(--macaron-peach); }
+  .card.yellow { border-left: 4px solid var(--macaron-yellow); }
+  .card.pink   { border-left: 4px solid var(--macaron-pink); }
+
+  .diagram {
+    background: var(--bg-card);
+    border-radius: var(--radius);
+    padding: 24px;
+    margin: 14px 0;
+    box-shadow: var(--shadow);
+    overflow-x: auto;
+    border: 1px solid var(--border-soft);
+  }
+  .diagram pre {
+    font-family: "SF Mono", Menlo, Consolas, monospace;
+    font-size: 12.5px;
+    line-height: 1.55;
+    color: var(--text-primary);
+    white-space: pre;
+  }
+
+  .codeblock {
+    background: #2D2A36;
+    color: #F5EFE6;
+    border-radius: var(--radius);
+    padding: 18px 22px;
+    margin: 14px 0;
+    overflow-x: auto;
+    font-family: "SF Mono", Menlo, Consolas, monospace;
+    font-size: 12.5px;
+    line-height: 1.6;
+    box-shadow: var(--shadow);
+  }
+  .codeblock .k { color: #E8A0BF; font-weight: 600; }
+  .codeblock .s { color: #B5E0A8; }
+  .codeblock .c { color: #8B8497; font-style: italic; }
+  .codeblock .n { color: #FFD6A5; }
+  .codeblock .t { color: #C7CEEA; }
+
+  table {
+    width: 100%;
+    border-collapse: separate;
+    border-spacing: 0;
+    margin: 14px 0;
+    background: var(--bg-card);
+    border-radius: var(--radius);
+    overflow: hidden;
+    box-shadow: var(--shadow);
+    font-size: 14px;
+  }
+  thead { background: var(--macaron-lilac); }
+  th { text-align: left; padding: 12px 16px; font-weight: 600; }
+  td {
+    padding: 11px 16px;
+    border-top: 1px solid var(--border-soft);
+    vertical-align: top;
+  }
+  tbody tr:hover { background: #FFFCF8; }
+
+  .badge {
+    display: inline-block;
+    padding: 2px 10px;
+    border-radius: 10px;
+    font-size: 12px;
+    font-weight: 600;
+  }
+  .badge.online  { background: var(--macaron-mint); color: #2D6A4F; }
+  .badge.offline { background: var(--macaron-pink); color: #9B2C5C; }
+  .badge.degrade { background: var(--macaron-yellow); color: #8A6D1E; }
+
+  code {
+    background: var(--code-bg);
+    padding: 1px 6px;
+    border-radius: 4px;
+    font-family: "SF Mono", Menlo, Consolas, monospace;
+    font-size: 13px;
+    color: #B4546F;
+  }
+
+  .adr {
+    background: var(--bg-card);
+    border-radius: var(--radius);
+    padding: 16px 22px;
+    margin: 12px 0;
+    box-shadow: var(--shadow);
+    border-left: 4px solid var(--macaron-peach);
+  }
+  .adr .id { font-weight: 700; color: #9B5C2C; margin-bottom: 6px; }
+  .adr ul { font-size: 14px; padding-left: 20px; margin-top: 6px; }
+
+  .toc {
+    background: var(--bg-card);
+    border-radius: var(--radius);
+    padding: 18px 24px;
+    margin-bottom: 28px;
+    box-shadow: var(--shadow);
+    border: 1px solid var(--border-soft);
+    font-size: 14px;
+  }
+  .toc h3 { margin-top: 0; margin-bottom: 8px; font-size: 15px; }
+  .toc ol { padding-left: 22px; columns: 2; }
+  .toc a { color: #B4546F; text-decoration: none; }
+  .toc a:hover { text-decoration: underline; }
+
+  .milestone {
+    background: var(--bg-card);
+    border-radius: var(--radius);
+    padding: 16px 22px;
+    margin: 10px 0;
+    box-shadow: var(--shadow);
+    border-left: 4px solid var(--macaron-blue);
+  }
+  .milestone .id { font-weight: 700; color: #2C5C8A; margin-bottom: 4px; }
+  .milestone .desc { font-size: 14px; color: var(--text-secondary); }
+
+  footer {
+    margin-top: 60px;
+    text-align: center;
+    color: var(--text-secondary);
+    font-size: 13px;
+  }
+  footer a { color: #B4546F; text-decoration: none; }
+</style>
+</head>
+<body>
+<div class="container">
+
+  <header class="hero">
+    <h1>🔧 AIFilmer MVP — 详细设计</h1>
+    <div class="subtitle">C4 Level 3 · 状态机 · 协议 · 算法 · 接口</div>
+    <div class="meta">
+      <span>📄 v1.0</span>
+      <span>👥 实现 / 算法工程师</span>
+      <span>🍎 Swift 5.9+</span>
+    </div>
+  </header>
+
+  <div class="toc">
+    <h3>📑 目录</h3>
+    <ol>
+      <li><a href="#sec0">阅读指南</a></li>
+      <li><a href="#sec1">Director 状态机</a></li>
+      <li><a href="#sec2">Fast Loop</a></li>
+      <li><a href="#sec3">Creative Loop</a></li>
+      <li><a href="#sec4">Shot Protocol</a></li>
+      <li><a href="#sec5">关键算法</a></li>
+      <li><a href="#sec6">Cloud Backend</a></li>
+      <li><a href="#sec7">性能预算</a></li>
+      <li><a href="#sec8">测试策略</a></li>
+      <li><a href="#sec9">错误处理</a></li>
+      <li><a href="#sec10">隐私与合规</a></li>
+      <li><a href="#sec11">ADR 完整版</a></li>
+      <li><a href="#sec12">实施顺序</a></li>
+    </ol>
+  </div>
+
+  <h2 id="sec0">0. 阅读指南</h2>
+  <div class="card peach">
+    <p>本文档面向实现层，按以下顺序阅读：</p>
+    <ol>
+      <li><strong>§1 Director 状态机</strong> — 整个 App 的业务骨架</li>
+      <li><strong>§2 Fast Loop / Creative Loop</strong> — 双环内部细节</li>
+      <li><strong>§3 Capability Layer</strong> — 每个能力模块的 API</li>
+      <li><strong>§4 Shot Protocol</strong> — MCP-like 协议 schema</li>
+      <li><strong>§5 关键算法</strong> — 跟踪平滑、调色 LUT、方向提示</li>
+      <li><strong>§6 Cloud Backend</strong> — 服务接口、提示词模板</li>
+      <li><strong>§7 性能预算与监控</strong></li>
+      <li><strong>§8 测试策略</strong></li>
+      <li><strong>§9 错误处理</strong></li>
+      <li><strong>§10 隐私与合规</strong></li>
+      <li><strong>§11 ADR 完整版</strong></li>
+    </ol>
+  </div>
+
+  <h2 id="sec1">1. Director 状态机</h2>
+
+  <div class="diagram"><pre>                 ┌───────────────┐
+                 │     Idle      │ ◄──────────────────────┐
+                 └───────┬───────┘                        │
+                         │ 用户输入主题 + 生成脚本           │
+                         ▼                                │
+                 ┌───────────────┐                        │
+                 │  ScriptReady  │                        │
+                 └───────┬───────┘                        │
+                         │ 用户点"开始"+对准主体           │
+                         ▼                                │
+                 ┌───────────────┐                        │
+            ┌────│   Shooting    │ ──── 镜头时长到 ───┐    │
+            │    │   (镜头 N)    │                    │    │
+            │    └───────────────┘                    ▼    │
+            │                                  ┌───────────────┐
+   手动结束镜头 │                                  │  NextShotPrompt │
+            │                                  └───────┬───────┘
+            │            ┌──── 接受 / 跳过 / 修改 ─────┘
+            │            ▼
+            └────► (回到 Shooting, N+1)
+
+                                                  │ 用户退出
+                                                  ▼
+                                          (回到 Idle)</pre></div>
+
+  <h3>1.2 状态枚举（Swift）</h3>
+  <div class="codeblock"><span class="k">enum</span> AppState {
+    <span class="k">case</span> <span class="n">idle</span>                              <span class="c">// 初始 / 拍摄完成后</span>
+    <span class="k">case</span> <span class="n">generatingScript</span>(<span class="t">ThemeInput</span>)       <span class="c">// 等待脚本生成</span>
+    <span class="k">case</span> <span class="n">scriptReady</span>(<span class="t">ScriptSpec</span>)            <span class="c">// 脚本已生成</span>
+    <span class="k">case</span> <span class="n">shooting</span>(<span class="t">ShotContext</span>)              <span class="c">// 正在拍摄某镜头</span>
+    <span class="k">case</span> <span class="n">nextShotPrompt</span>(<span class="t">NextShotContext</span>)    <span class="c">// 等待用户对下一镜头的决策</span>
+    <span class="k">case</span> <span class="n">processing</span>(<span class="t">ProcessingContext</span>)      <span class="c">// 后期处理（如生成缩略图）</span>
+}</pre></div>
+
+  <h3>1.3 状态转换触发条件</h3>
+  <table>
+    <thead><tr><th>From</th><th>To</th><th>触发事件</th><th>守卫条件</th></tr></thead>
+    <tbody>
+      <tr><td>Idle</td><td>GeneratingScript</td><td>用户点"生成脚本"</td><td>主题非空、网络可用</td></tr>
+      <tr><td>GeneratingScript</td><td>ScriptReady</td><td>后端返回有效 ShotSpec</td><td>通过 schema 校验</td></tr>
+      <tr><td>GeneratingScript</td><td>Idle</td><td>用户取消 / 错误重试 3 次</td><td>—</td></tr>
+      <tr><td>ScriptReady</td><td>Shooting</td><td>用户点"开始"+ 已对准主体</td><td>检测到主体或用户跳过对准提示</td></tr>
+      <tr><td>Shooting</td><td>NextShotPrompt</td><td>当前镜头时长到 ±10% / 用户手动结束</td><td>—</td></tr>
+      <tr><td>NextShotPrompt</td><td>Shooting</td><td>用户点"接受" / "跳过"</td><td>—</td></tr>
+      <tr><td>NextShotPrompt</td><td>GeneratingScript</td><td>用户点"修改"且修改的是当前镜头</td><td>—</td></tr>
+      <tr><td>Shooting</td><td>Idle</td><td>用户点"停止拍摄"</td><td>—</td></tr>
+    </tbody>
+  </table>
+
+  <h3>1.4 内部组件</h3>
+  <table>
+    <thead><tr><th>组件</th><th>职责</th></tr></thead>
+    <tbody>
+      <tr><td><strong>StateStore</strong></td><td>持有当前 AppState（单一可变源），订阅者收到 @Published 流</td></tr>
+      <tr><td><strong>EventBus</strong></td><td>无锁消息总线（actor / DispatchQueue + 原子计数器）</td></tr>
+      <tr><td><strong>LoopCoordinator</strong></td><td>启动/停止 Fast Loop 与 Creative Loop，路由它们的输出</td></tr>
+      <tr><td><strong>SharedState</strong></td><td>Fast Loop 与 Creative Loop 之间的只读快照（每 100ms 一份）</td></tr>
+    </tbody>
+  </table>
+
+  <div class="card yellow">
+    <p><strong>💡 关键点</strong>：单写多读，StateStore 是 Director 内唯一可变状态；Fast/Creative Loop 仅发布只读事件；所有跨 Loop 通信通过事件，Director 在主线程串行处理；可回放（事件落本地日志）。</p>
+  </div>
+
+  <h2 id="sec2">2. Fast Loop（端侧实时闭环）</h2>
+
+  <h3>2.2 处理流水线</h3>
+  <div class="diagram"><pre>Camera Frame
+    │
+    ▼
+┌─────────────────┐
+│  Preprocess     │  · 缩放到模型输入尺寸 (192×192 主体 / 224×224 场景)
+│  (Vision Kit)   │  · 归一化
+└────────┬────────┘
+         │
+         ▼
+┌─────────────────┐     ┌─────────────────┐
+│  SubjectNet     │     │  SceneNet       │
+│  (YOLOv8-Nano   │     │  (MobileNet-Eff)│
+│   + ByteTrack)  │     │                 │
+└────────┬────────┘     └────────┬────────┘
+         │                       │
+         ▼                       ▼
+  SubjectState                 SceneState
+         │                       │
+         └───────────┬───────────┘
+                     ▼
+            ┌──────────────────┐
+            │  PolicyEngine    │
+            │  · 死区控制       │
+            │  · 惯性平滑       │
+            │  · 调参指令生成   │
+            └────────┬─────────┘
+                     ▼
+           CameraAction (EV/AF/AWB/Zoom)
+                     │
+                     ▼
+            ┌──────────────────┐
+            │ CameraDriver     │
+            │ (AVFoundation)   │
+            └──────────────────┘</pre></div>
+
+  <h3>2.3 PolicyEngine 核心算法</h3>
+  <div class="codeblock"><span class="k">struct</span> <span class="t">PolicyEngine</span> {
+    <span class="c">// 调参死区：参数变化小于阈值不动作</span>
+    <span class="k">let</span> exposureDeadZone: <span class="t">Float</span> = <span class="n">0.3</span>      <span class="c">// EV ±0.3</span>
+    <span class="k">let</span> whiteBalanceDeadZone: <span class="t">Float</span> = <span class="n">200</span>   <span class="c">// K ±200</span>
+    <span class="k">let</span> focusDeadZone: <span class="t">Float</span> = <span class="n">0.05</span>         <span class="c">// 5% 画面范围</span>
+    <span class="k">let</span> zoomSmoothingFactor: <span class="t">Float</span> = <span class="n">0.2</span>    <span class="c">// EMA 系数</span>
+
+    <span class="k">func</span> <span class="n">decide</span>(prev: <span class="t">CameraAction</span>?, curr: <span class="t">RawInference</span>,
+              sceneHint: <span class="t">SceneHint</span>) -&gt; <span class="t">CameraAction</span> {
+        <span class="c">// 1. 调参死区</span>
+        <span class="k">var</span> action = curr.suggestedAction
+        <span class="k">if let</span> prev = prev {
+            action.exposureBias = applyDeadZone(
+                prev.exposureBias, curr.suggestedAction.exposureBias,
+                deadZone: exposureDeadZone)
+        }
+
+        <span class="c">// 2. 场景分类修正：夜景不放低 EV，人像优先肤色</span>
+        <span class="k">if</span> sceneHint == .nightPortrait {
+            action.exposureBias = <span class="n">max</span>(action.exposureBias, -<span class="n">0.5</span>)
+        }
+
+        <span class="c">// 3. 跟踪平滑：使用 EMA 平滑 zoom factor</span>
+        action.zoomFactor = <span class="n">ema</span>(prev?.zoomFactor ?? <span class="n">1.0</span>,
+                                 curr.suggestedAction.zoomFactor,
+                                 alpha: zoomSmoothingFactor)
+
+        <span class="k">return</span> action
+    }
+}</pre></div>
+
+  <h3>2.4 延迟预算</h3>
+  <table>
+    <thead><tr><th>阶段</th><th>预算</th></tr></thead>
+    <tbody>
+      <tr><td>Camera capture → preprocess</td><td>50ms</td></tr>
+      <tr><td>SubjectNet + SceneNet 推理</td><td>50ms</td></tr>
+      <tr><td>PolicyEngine</td><td>&lt; 5ms</td></tr>
+      <tr><td>CameraDriver 应用</td><td>100ms</td></tr>
+      <tr><td><strong>总 Fast Loop</strong></td><td><strong>≤ 500ms（含缓冲）</strong></td></tr>
+    </tbody>
+  </table>
+
+  <h2 id="sec3">3. Creative Loop（云云协同闭环）</h2>
+
+  <h3>3.3 Creative Loop 调用类型</h3>
+  <table>
+    <thead><tr><th>类型</th><th>输入</th><th>输出</th><th>触发</th></tr></thead>
+    <tbody>
+      <tr><td><strong>GENERATE_SCRIPT</strong></td><td>ThemeText</td><td>ScriptSpec</td><td>用户点"生成脚本"</td></tr>
+      <tr><td><strong>REGENERATE_SHOT</strong></td><td>ShotIndex + ModifyHint</td><td>SingleShotSpec</td><td>用户点"修改镜头"</td></tr>
+      <tr><td><strong>MATCH_SUBJECT</strong></td><td>currentFrame + targetDescription</td><td>SubjectMatchResult</td><td>镜头切换前</td></tr>
+      <tr><td><strong>COMPUTE_DIRECTION</strong></td><td>prevFrame + currFrame + target</td><td>DirectionHint</td><td>镜头切换前</td></tr>
+      <tr><td><strong>MODIFY_NEXT_SHOT</strong></td><td>ShotSpec + ModifyHint</td><td>SingleShotSpec</td><td>用户修改下一镜头</td></tr>
+    </tbody>
+  </table>
+
+  <h2 id="sec4">4. Shot Protocol（MCP-like 协议）</h2>
+
+  <h3>4.1 设计原则</h3>
+  <div class="card mint">
+    <ul>
+      <li><strong>协议 schema 冻结</strong>：协议版本号 <code>v1</code>，向后兼容</li>
+      <li><strong>工具抽象</strong>：每条能力 = 一个 tool，LLM 输出是 tool calls 序列</li>
+      <li><strong>JSON Schema 严格校验</strong>：服务端校验，客户端再校验</li>
+      <li><strong>失败可恢复</strong>：单条 tool 失败不影响其他 tool</li>
+    </ul>
+  </div>
+
+  <h3>4.3.1 GENERATE_SCRIPT 输出 ScriptSpec</h3>
+  <div class="codeblock">{
+  <span class="s">"script_id"</span>: <span class="s">"uuid"</span>,
+  <span class="s">"style_profile"</span>: {
+    <span class="s">"name"</span>: <span class="s">"warm_warm"</span>,
+    <span class="s">"color_temp_shift"</span>: <span class="n">250</span>,
+    <span class="s">"contrast"</span>: <span class="n">1.05</span>,
+    <span class="s">"saturation"</span>: <span class="n">1.1</span>
+  },
+  <span class="s">"shots"</span>: [
+    {
+      <span class="s">"index"</span>: <span class="n">0</span>,
+      <span class="s">"type"</span>: <span class="s">"wide"</span>,
+      <span class="s">"subject"</span>: <span class="s">"咖啡店门头全景"</span>,
+      <span class="s">"subject_descriptor"</span>: <span class="s">"咖啡店入口 + 招牌"</span>,
+      <span class="s">"duration_sec"</span>: <span class="n">4.0</span>,
+      <span class="s">"camera_motion"</span>: <span class="s">"static"</span>,
+      <span class="s">"color_intent"</span>: <span class="s">"warm_sunset"</span>,
+      <span class="s">"ai_capability_request"</span>: {
+        <span class="s">"tracking"</span>: <span class="s">"off"</span>,
+        <span class="s">"exposure_strategy"</span>: <span class="s">"ev_locked"</span>,
+        <span class="s">"color_strategy"</span>: <span class="s">"warm"</span>
+      }
+    }
+  ]
+}</pre></div>
+
+  <h3>4.4 错误处理</h3>
+  <table>
+    <thead><tr><th>错误码</th><th>含义</th><th>客户端处理</th></tr></thead>
+    <tbody>
+      <tr><td><code>INVALID_SCHEMA</code></td><td>LLM 输出违反 schema</td><td>自动 retry 1 次，第二次失败用预制模板</td></tr>
+      <tr><td><code>TIMEOUT</code></td><td>LLM 推理超时（&gt; 5s）</td><td>用预制模板 + 提示用户</td></tr>
+      <tr><td><code>LLM_RATE_LIMIT</code></td><td>限流</td><td>退避 2s 后 retry</td></tr>
+      <tr><td><code>SUBJECT_NOT_FOUND</code></td><td>MATCH_SUBJECT 未找到</td><td>提示"请旋转手机寻找"</td></tr>
+    </tbody>
+  </table>
+
+  <h2 id="sec5">5. 关键算法</h2>
+
+  <h3>5.1 主体跟踪平滑（Kalman Filter）</h3>
+  <div class="codeblock"><span class="k">class</span> <span class="t">SubjectTracker</span> {
+    <span class="k">private var</span> kf: <span class="t">KalmanFilter2D</span>
+    <span class="k">private var</span> lastUpdate: <span class="t">TimeInterval</span> = <span class="n">0</span>
+
+    <span class="k">func</span> <span class="n">update</span>(detections: [<span class="t">BBox</span>]) -&gt; <span class="t">BBox</span>? {
+        <span class="c">// 1. 数据关联：IOU 匹配</span>
+        <span class="k">let</span> matched = matchByIOU(detections, lastDetection, threshold: <span class="n">0.3</span>)
+
+        <span class="c">// 2. 卡尔曼预测 + 更新</span>
+        kf.predict(dt: now - last)
+        <span class="k">if let</span> m = matched {
+            kf.update(measurement: m.center)
+        } <span class="k">else</span> {
+            <span class="c">// 丢失超过 1s：丢失处理（不再预测）</span>
+            <span class="k">return nil</span>
+        }
+
+        lastUpdate = now
+        <span class="k">return</span> kf.getStateBBox()
+    }
+}</pre></div>
+
+  <h3>5.2 主动调色（Metal Shader LUT）</h3>
+  <div class="codeblock"><span class="c">// ColorEngine 核心 shader</span>
+<span class="k">fragment</span> <span class="t">half4</span> colorLUTFragment(
+    <span class="t">VertexOut</span> in [[stage_in]],
+    texture2d&lt;<span class="t">float</span>, access::sample&gt; inputTex [[texture(<span class="n">0</span>)]],
+    <span class="k">constant</span> <span class="t">ColorParams</span> &amp;params [[buffer(<span class="n">0</span>)]]
+) {
+    <span class="t">half4</span> color = inputTex.sample(s, in.texCoord);
+
+    <span class="c">// 色温偏移（暖/冷）</span>
+    color.r += params.tempShift * color.r;
+    color.b -= params.tempShift * color.b;
+
+    <span class="c">// 对比度</span>
+    color.rgb = (color.rgb - <span class="n">0.5</span>) * params.contrast + <span class="n">0.5</span>;
+
+    <span class="c">// 饱和度</span>
+    <span class="t">half</span> gray = dot(color.rgb, <span class="t">half3</span>(<span class="n">0.299</span>, <span class="n">0.587</span>, <span class="n">0.114</span>));
+    color.rgb = mix(<span class="t">half3</span>(gray), color.rgb, <span class="t">half</span>(params.saturation));
+
+    <span class="c">// 肤色保护</span>
+    <span class="k">if</span> (params.skinProtect &gt; <span class="n">0</span>) {
+        <span class="t">half</span> skinMask = computeSkinMask(color);
+        color.rgb = mix(color.rgb, color.rgb * params.skinSafe, skinMask * params.skinProtect);
+    }
+
+    <span class="k">return</span> color;
+}</pre></div>
+
+  <div class="card pink">
+    <p><strong>⚠️ 参数范围（防失真）</strong>：色温偏移 ±15%（<code>params.tempShift ∈ [-0.15, 0.15]</code>）；饱和度 0.8~1.2；对比度 0.9~1.1；肤色保护权重 0.0~0.5</p>
+  </div>
+
+  <h3>5.3 三维方向提示生成</h3>
+  <div class="codeblock"><span class="k">struct</span> <span class="t">DirectionComputer</span> {
+    <span class="k">func</span> <span class="n">compute</span>(prev: <span class="t">BBox</span>?, curr: <span class="t">BBox</span>,
+              target: <span class="t">BBox</span>?, targetInFrame: <span class="t">Bool</span>) -&gt; <span class="t">DirectionHint</span> {
+        <span class="c">// 目标不在画面内</span>
+        <span class="k">guard</span> targetInFrame <span class="k">else</span> {
+            <span class="k">return</span> <span class="t">DirectionHint</span>(
+                direction: .search,
+                naturalLanguage: <span class="s">"请旋转手机寻找：\(targetDescription)"</span>,
+                confidence: <span class="n">0.0</span>
+            )
+        }
+
+        <span class="k">guard let</span> target = target <span class="k">else</span> {
+            <span class="k">return</span> <span class="t">DirectionHint</span>(direction: .center, ...)
+        }
+
+        <span class="c">// 目标在画面内：基于偏差给方向</span>
+        <span class="k">let</span> dx = (target.center.x - <span class="n">0.5</span>) * <span class="n">2</span>  <span class="c">// [-1, 1]</span>
+        <span class="k">let</span> dy = (target.center.y - <span class="n">0.5</span>) * <span class="n">2</span>
+
+        <span class="k">let</span> direction: <span class="t">Direction</span>
+        <span class="k">if</span> <span class="n">abs</span>(dx) &gt; <span class="n">abs</span>(dy) {
+            direction = dx &gt; <span class="n">0.05</span> ? .right : (dx &lt; -<span class="n">0.05</span> ? .left : .center)
+        } <span class="k">else</span> {
+            direction = dy &gt; <span class="n">0.05</span> ? .down : (dy &lt; -<span class="n">0.05</span> ? .up : .center)
+        }
+
+        <span class="c">// 收敛性判断：与上一帧方向相反 → 已收敛</span>
+        <span class="k">let</span> converging = prev.<span class="n">map</span> {
+            oppositeDirection($0.direction, direction)
+        } ?? <span class="n">false</span>
+
+        <span class="k">return</span> <span class="t">DirectionHint</span>(
+            direction: direction,
+            naturalLanguage: directionText(direction),
+            confidence: <span class="n">0.9</span>,
+            converge_indicator: converging
+        )
+    }
+}</pre></div>
+
+  <h2 id="sec6">6. Cloud Backend 详细设计</h2>
+
+  <h3>6.1 API 端点</h3>
+  <table>
+    <thead><tr><th>方法</th><th>路径</th><th>用途</th></tr></thead>
+    <tbody>
+      <tr><td>POST</td><td><code>/v1/scripts/generate</code></td><td>生成整组脚本</td></tr>
+      <tr><td>POST</td><td><code>/v1/scripts/{id}/shots/{idx}/regenerate</code></td><td>修改单个镜头</td></tr>
+      <tr><td>POST</td><td><code>/v1/subjects/match</code></td><td>主体匹配</td></tr>
+      <tr><td>POST</td><td><code>/v1/hints/direction</code></td><td>方向提示</td></tr>
+      <tr><td>GET</td><td><code>/v1/templates/{theme_class}</code></td><td>预制模板（离线降级）</td></tr>
+      <tr><td>GET</td><td><code>/v1/health</code></td><td>健康检查</td></tr>
+    </tbody>
+  </table>
+
+  <h3>6.3 GENERATE_SCRIPT 提示词骨架</h3>
+  <div class="codeblock"><span class="c">你是 AIFilmer 的镜头语言导演。用户给出一段主题描述，请将其拆分为 N 个镜头。
+
+【输出要求】
+- 严格输出 JSON，遵守 ShotSpec schema
+- 每个镜头字段必须完整：type / subject / duration_sec / camera_motion / color_intent / ai_capability_request
+- 镜头时长建议 3~6 秒；切镜头时长不要相同（避免单调）
+- 镜头之间要有叙事节奏（建立 → 发展 → 高潮 → 收尾）
+- 调色意图词汇：warm_sunset / cool_morning / neutral_daylight / night_warm / moody_cool 等
+
+【主题】
+{theme}
+
+【风格】
+{style_profile_name}
+
+【输出 N】
+{shot_count}</span></pre></div>
+
+  <h3>6.4 预制模板（MVP 3 套）</h3>
+  <table>
+    <thead><tr><th>主题类</th><th>镜头数</th><th>风格</th><th>用途</th></tr></thead>
+    <tbody>
+      <tr><td>人物特写</td><td>4</td><td>warm_portrait</td><td>"拍一段人像"</td></tr>
+      <tr><td>风景静物</td><td>4</td><td>cool_morning</td><td>"拍一段风景"</td></tr>
+      <tr><td>Vlog 中景</td><td>5</td><td>neutral_daylight</td><td>"拍一段 Vlog"</td></tr>
+    </tbody>
+  </table>
+
+  <h2 id="sec7">7. 性能预算与监控</h2>
+
+  <h3>7.1 端到端性能预算</h3>
+  <table>
+    <thead><tr><th>链路</th><th>预算</th></tr></thead>
+    <tbody>
+      <tr><td>Fast Loop 总延迟</td><td>≤ 500ms</td></tr>
+      <tr><td>Creative Loop 拆镜本</td><td>≤ 5s</td></tr>
+      <tr><td>Creative Loop 主体匹配</td><td>≤ 2s</td></tr>
+      <tr><td>Creative Loop 方向提示</td><td>≤ 1s</td></tr>
+      <tr><td>视频录制连续时长</td><td>≥ 10 min</td></tr>
+      <tr><td>录制掉帧率</td><td>≤ 0.1%</td></tr>
+    </tbody>
+  </table>
+
+  <div class="card yellow">
+    <p>📊 MVP <strong>不上报任何指标到云端</strong>（保护隐私）；服务端监控 API P95、token 消耗、INVALID_SCHEMA 比率、错误率。</p>
+  </div>
+
+  <h2 id="sec8">8. 测试策略</h2>
+
+  <h3>8.1 测试矩阵</h3>
+  <table>
+    <thead><tr><th>层级</th><th>类型</th><th>工具</th><th>覆盖目标</th></tr></thead>
+    <tbody>
+      <tr><td>单元</td><td>Director 状态机</td><td>XCTest</td><td>状态转换 100%</td></tr>
+      <tr><td>单元</td><td>PolicyEngine</td><td>XCTest</td><td>死区 / 平滑 / 场景修正</td></tr>
+      <tr><td>单元</td><td>SubjectTracker</td><td>XCTest</td><td>跟踪稳定性 / 丢失恢复</td></tr>
+      <tr><td>单元</td><td>DirectionComputer</td><td>XCTest</td><td>收敛性判断</td></tr>
+      <tr><td>集成</td><td>Shot Protocol</td><td>XCTest + 后端 fixture</td><td>schema 校验 / retry</td></tr>
+      <tr><td>集成</td><td>Fast Loop pipeline</td><td>XCTest</td><td>端到端延迟</td></tr>
+      <tr><td>集成</td><td>Cloud Backend</td><td>pytest</td><td>API 正确性</td></tr>
+      <tr><td>系统</td><td>三类演示场景</td><td>XCTest UI</td><td>连续拍摄成功率 ≥ 90%</td></tr>
+      <tr><td>系统</td><td>设备矩阵</td><td>TestFlight</td><td>iPhone 14/15/16 各 2 台</td></tr>
+    </tbody>
+  </table>
+
+  <h3>8.2 关键测试用例</h3>
+  <ul>
+    <li><strong>TC-01</strong>：状态机 ScriptReady → Shooting 的守卫条件</li>
+    <li><strong>TC-02</strong>：PolicyEngine 在 EV 死区内不动作</li>
+    <li><strong>TC-03</strong>：跟踪器在主体丢失 1s 后正确返回 nil</li>
+    <li><strong>TC-04</strong>：调色参数饱和度上限保护肤色不失真</li>
+    <li><strong>TC-05</strong>：LLM 返回 INVALID_SCHEMA 自动 retry 1 次</li>
+    <li><strong>TC-06</strong>：离线时拆镜本走预制模板</li>
+    <li><strong>TC-07</strong>：方向提示的收敛性（连续 3 次提示方向相反）</li>
+  </ul>
+
+  <h2 id="sec9">9. 端到端错误处理</h2>
+
+  <h3>9.1 错误分类</h3>
+  <table>
+    <thead><tr><th>类别</th><th>例子</th><th>处理</th></tr></thead>
+    <tbody>
+      <tr><td>可恢复网络错误</td><td>超时 / 5xx</td><td>自动 retry + 退避</td></tr>
+      <tr><td>可恢复 LLM 错误</td><td>INVALID_SCHEMA</td><td>retry 1 次 + 模板兜底</td></tr>
+      <tr><td>不可恢复错误</td><td>用户取消 / API Key 失效</td><td>显示明确错误</td></tr>
+      <tr><td>设备能力错误</td><td>NPU 不可用</td><td>降级 + 提示</td></tr>
+    </tbody>
+  </table>
+
+  <h3>9.2 用户可见错误文案规范</h3>
+  <div class="card peach">
+    <ul>
+      <li><strong>不出现技术术语</strong>："JSON 解析失败" → "AI 暂时没想好，我们再试一次？"</li>
+      <li><strong>永远给下一步动作</strong>：除"取消"外必须有"重试 / 使用备选方案"</li>
+      <li><strong>永远可回退</strong>：每个错误状态都能返回到 Idle</li>
+    </ul>
+  </div>
+
+  <h2 id="sec10">10. 隐私与合规实现</h2>
+
+  <h3>10.1 数据流隐私分级</h3>
+  <table>
+    <thead><tr><th>数据</th><th>存储位置</th><th>是否上传</th></tr></thead>
+    <tbody>
+      <tr><td>用户拍摄的视频</td><td>App 沙盒（仅本地）</td><td>❌ 不上传</td></tr>
+      <tr><td>主题文本</td><td>仅在请求体内</td><td>✅ 上传（脱敏）</td></tr>
+      <tr><td>主体匹配用图片</td><td>临时文件，请求后删除</td><td>✅ 上传（裁剪至 &lt; 50KB）</td></tr>
+      <tr><td>脚本 JSON</td><td>本地缓存</td><td>❌ 不上传</td></tr>
+      <tr><td>端侧模型</td><td>App 沙盒</td><td>❌ 不上传</td></tr>
+    </tbody>
+  </table>
+
+  <h3>10.2 App Store 隐私声明要点</h3>
+  <ul>
+    <li>相机权限："用于拍摄视频"</li>
+    <li>（MVP 不需要）麦克风权限：留待 v1.1</li>
+    <li>不收集位置 / 通讯录 / 标识符</li>
+  </ul>
+
+  <h2 id="sec11">11. ADR 完整版</h2>
+
+  <div class="adr">
+    <div class="id">ADR-001 · 双环分层架构</div>
+    <ul>
+      <li><strong>状态</strong>：已批准</li>
+      <li><strong>决策</strong>：Fast Loop（≤ 500ms，端侧）与 Creative Loop（1~3s，云云协同）物理隔离，通过 SharedState + EventBus 通信</li>
+      <li><strong>理由</strong>：满足延迟预算；端云分层清晰；扩展性好</li>
+      <li><strong>后果</strong>：Director 必须是无锁的纯消息路由；Capability Layer 接口要稳定</li>
+    </ul>
+  </div>
+
+  <div class="adr">
+    <div class="id">ADR-002 · 端侧优先 + 云侧可选</div>
+    <ul>
+      <li><strong>决策</strong>：所有能力标记 Online-Required / Online-Optional / Offline-Only</li>
+      <li><strong>理由</strong>：断网时核心拍摄能力必须可用</li>
+      <li><strong>后果</strong>：脚本生成、主体匹配、方向提示在断网时降级</li>
+    </ul>
+  </div>
+
+  <div class="adr">
+    <div class="id">ADR-003 · Shot Protocol 协议先行</div>
+    <ul>
+      <li><strong>决策</strong>：定义 MCP-like 协议，所有 LLM 输出必须遵守</li>
+      <li><strong>理由</strong>：协议稳定后再扩展能力</li>
+      <li><strong>后果</strong>：服务端维护 schema 注册表；客户端解析失败可降级</li>
+    </ul>
+  </div>
+
+  <div class="adr">
+    <div class="id">ADR-004 · 设备白名单</div>
+    <ul>
+      <li><strong>决策</strong>：MVP 仅在 iPhone 14 及以上 iOS 17+ 设备上保证完整能力</li>
+      <li><strong>理由</strong>：不同 iPhone 机型 AVFoundation 行为差异巨大</li>
+      <li><strong>后果</strong>：App 启动时检测设备能力；不达标给出明确提示</li>
+    </ul>
+  </div>
+
+  <div class="adr">
+    <div class="id">ADR-005 · 状态机驱动而非事件链驱动</div>
+    <ul>
+      <li><strong>决策</strong>：Director 用显式状态机而非回调链</li>
+      <li><strong>理由</strong>：可测试性高；状态转换可枚举；bug 容易复现</li>
+      <li><strong>后果</strong>：所有 UI 必须订阅 StateStore；不能反向写状态</li>
+    </ul>
+  </div>
+
+  <div class="adr">
+    <div class="id">ADR-006 · LLM 输出必须走 schema 校验 + 预制模板兜底</div>
+    <ul>
+      <li><strong>决策</strong>：所有 LLM 输出在客户端和服务端都过 JSON Schema 校验</li>
+      <li><strong>理由</strong>：LLM 输出不稳定是结构性风险，必须有结构性兜底</li>
+      <li><strong>后果</strong>：服务端必须有完整的 schema 定义；预制模板必须覆盖三大演示场景</li>
+    </ul>
+  </div>
+
+  <div class="adr">
+    <div class="id">ADR-007 · 视频与脚本完全本地存储</div>
+    <ul>
+      <li><strong>决策</strong>：用户视频与脚本一律本地存储，不上传云端</li>
+      <li><strong>理由</strong>：隐私优先；MVP 用户接受度依赖此承诺</li>
+      <li><strong>后果</strong>：历史视频管理功能完全本地；不做云端备份（MVP）</li>
+    </ul>
+  </div>
+
+  <h2 id="sec12">12. 实施顺序（建议）</h2>
+  <div class="card lilac">
+    <p>按以下顺序实现，每个里程碑独立可演示：</p>
+  </div>
+
+  <div class="milestone">
+    <div class="id">M0 · App 骨架 + Camera 预览 + 录制</div>
+    <div class="desc">能录视频</div>
+  </div>
+  <div class="milestone">
+    <div class="id">M1 · 端侧 Vision Pipeline + PolicyEngine + Camera Driver</div>
+    <div class="desc">单镜头 AI 调参与调色</div>
+  </div>
+  <div class="milestone">
+    <div class="id">M2 · Director 状态机 + UI（HUD + 下一镜头卡）</div>
+    <div class="desc">单镜头完整闭环</div>
+  </div>
+  <div class="milestone">
+    <div class="id">M3 · Cloud Backend + Shot Protocol Client</div>
+    <div class="desc">LLM 拆镜本可用</div>
+  </div>
+  <div class="milestone">
+    <div class="id">M4 · Creative Loop + 主体匹配 + 方向提示</div>
+    <div class="desc">多镜头连续拍摄</div>
+  </div>
+  <div class="milestone">
+    <div class="id">M5 · 演示三类场景 + Golden Path</div>
+    <div class="desc">MVP 完成</div>
+  </div>
+
+  <footer>
+    <p>📚 相关文档：<a href="./requirements-analysis.html">需求分析</a> · <a href="./high-level-design.html">概要设计</a></p>
+    <p style="margin-top: 10px;">AIFilmer MVP · 2026</p>
+  </footer>
+
+</div>
+</body>
+</html>
