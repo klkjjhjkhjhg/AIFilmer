@@ -99,6 +99,96 @@
     font-size: 15px;
   }
 
+  /* ---------- 使用流程 ---------- */
+  .flow {
+    background: var(--bg-card);
+    border-radius: var(--radius);
+    padding: 36px 32px;
+    box-shadow: var(--shadow);
+    border: 1px solid var(--border-soft);
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
+    gap: 20px;
+    position: relative;
+  }
+  .flow::before {
+    content: "";
+    position: absolute;
+    top: 50%;
+    left: 5%;
+    right: 5%;
+    height: 2px;
+    background: repeating-linear-gradient(
+      to right,
+      var(--macaron-pink) 0 8px,
+      transparent 8px 16px
+    );
+    z-index: 0;
+    pointer-events: none;
+  }
+  .flow-step {
+    position: relative;
+    z-index: 1;
+    background: var(--bg-card);
+    padding: 16px 14px;
+    border-radius: 14px;
+    text-align: center;
+    border: 1px solid var(--border-soft);
+    box-shadow: 0 4px 12px rgba(220, 180, 150, 0.1);
+  }
+  .flow-step .num {
+    display: inline-block;
+    width: 36px;
+    height: 36px;
+    line-height: 36px;
+    border-radius: 50%;
+    background: var(--macaron-pink);
+    color: #9B2C5C;
+    font-weight: 700;
+    margin-bottom: 10px;
+  }
+  .flow-step:nth-child(2) .num { background: var(--macaron-yellow); color: #8A6D1E; }
+  .flow-step:nth-child(3) .num { background: var(--macaron-mint);   color: #2D6A4F; }
+  .flow-step:nth-child(4) .num { background: var(--macaron-blue);   color: #2C5C8A; }
+  .flow-step:nth-child(5) .num { background: var(--macaron-lilac);  color: #5C4D8A; }
+  .flow-step .icon { font-size: 26px; margin-bottom: 6px; }
+  .flow-step h4 { font-size: 14.5px; margin-bottom: 4px; }
+  .flow-step p  { font-size: 12.5px; color: var(--text-secondary); margin: 0; }
+
+  /* ---------- 架构图 ---------- */
+  .arch {
+    background: var(--bg-card);
+    border-radius: var(--radius);
+    padding: 28px;
+    box-shadow: var(--shadow);
+    border: 1px solid var(--border-soft);
+    overflow-x: auto;
+  }
+  .arch pre {
+    font-family: "SF Mono", Menlo, Consolas, monospace;
+    font-size: 12px;
+    line-height: 1.55;
+    color: var(--text-primary);
+    white-space: pre;
+    margin: 0;
+  }
+  .arch-legend {
+    display: flex;
+    justify-content: center;
+    gap: 18px;
+    margin-top: 16px;
+    flex-wrap: wrap;
+    font-size: 13px;
+    color: var(--text-secondary);
+  }
+  .arch-legend .dot {
+    display: inline-block;
+    width: 12px; height: 12px;
+    border-radius: 3px;
+    margin-right: 6px;
+    vertical-align: middle;
+  }
+
   /* ---------- 三文档卡片 ---------- */
   .docs-grid {
     display: grid;
@@ -239,6 +329,100 @@
     <span class="badge">📐 双环分层架构</span>
     <span class="badge">🎨 MCP-like 协议</span>
     <span class="badge">🎯 MVP 阶段</span>
+  </div>
+</section>
+
+<section>
+  <div class="container">
+    <h2>👤 用户使用流程</h2>
+    <p class="section-sub">从打开 App 到拍完整组镜头 · 全流程只需 5 步</p>
+
+    <div class="flow">
+      <div class="flow-step">
+        <div class="num">1</div>
+        <div class="icon">✍️</div>
+        <h4>输入主题</h4>
+        <p>输入想拍的内容，如"夕阳下的咖啡店"</p>
+      </div>
+      <div class="flow-step">
+        <div class="num">2</div>
+        <div class="icon">🎬</div>
+        <h4>AI 拆镜本</h4>
+        <p>云侧 LLM 自动拆分为 2~8 个镜头脚本</p>
+      </div>
+      <div class="flow-step">
+        <div class="num">3</div>
+        <div class="icon">📸</div>
+        <h4>对准 + 开始</h4>
+        <p>把镜头对准第一个镜头的拍摄主体</p>
+      </div>
+      <div class="flow-step">
+        <div class="num">4</div>
+        <div class="icon">🤖</div>
+        <h4>AI 自主拍摄</h4>
+        <p>端侧实时调参 + 主动调色 + 主体跟踪</p>
+      </div>
+      <div class="flow-step">
+        <div class="num">5</div>
+        <div class="icon">🧭</div>
+        <h4>三维提示 · 切下一镜</h4>
+        <p>接受 / 跳过 / 修改 AI 推荐的下一镜头</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section>
+  <div class="container">
+    <h2>🏛️ 技术架构</h2>
+    <p class="section-sub">双环分层 · 端云协同 · Shot Protocol 协议层</p>
+
+    <div class="arch"><pre>┌──────────────────────────────────────────────────────────────┐
+│                    iOS App (Swift)                           │
+│                                                              │
+│   Presentation (SwiftUI)                                     │
+│   · 主题输入  · 脚本卡片  · 拍摄预览  · HUD 决策可视化       │
+│                          ▲                                   │
+│                          │ 事件                               │
+│   ┌──────────────────────┼───────────────────────────────┐   │
+│   │              Director (状态机 + 双环编排)           │   │
+│   │  ┌────────────────┐    ┌─────────────────────────┐   │   │
+│   │  │  Fast Loop     │    │  Creative Loop          │   │   │
+│   │  │  ≤ 500ms       │    │  1~3s                   │   │   │
+│   │  │  端侧 NPU      │    │  云侧 LLM 协同          │   │   │
+│   │  └────────────────┘    └─────────────────────────┘   │   │
+│   └──────────────────────────────────────────────────────┘   │
+│                          ▲                                   │
+│   ┌──────────────────────┼───────────────────────────────┐   │
+│   │              Capability Layer                       │   │
+│   │  VisionPipeline · CameraDriver · ColorEngine        │   │
+│   │  ShotProtocolClient · StyleProfile · ModelManager  │   │
+│   └──────────────────────────────────────────────────────┘   │
+└──────────────────────────────────────────────────────────────┘
+                          │
+                          │ HTTPS · Shot Protocol v1
+                          ▼
+┌──────────────────────────────────────────────────────────────┐
+│                  Cloud Backend (FastAPI)                     │
+│                                                              │
+│   ShotScriptService · SubjectMatchService · DirectionHint    │
+│                          │                                   │
+│                          ▼                                   │
+│                  Shot Protocol Registry                      │
+│                  (MCP-like 协议层 · JSON Schema 校验)        │
+│                          │                                   │
+│                          ▼                                   │
+│                  LLM Provider Adapter                        │
+│                  (OpenAI / Anthropic / Qwen)                 │
+└──────────────────────────────────────────────────────────────┘</pre></div>
+
+    <div class="arch-legend">
+      <span><span class="dot" style="background:#FFD6E0"></span>用户交互层</span>
+      <span><span class="dot" style="background:#C7F0DB"></span>端侧 AI 实时</span>
+      <span><span class="dot" style="background:#C8E7FF"></span>端侧能力模块</span>
+      <span><span class="dot" style="background:#FFF1B6"></span>云侧协议层</span>
+      <span><span class="dot" style="background:#E3D6FF"></span>云侧 LLM</span>
+    </div>
   </div>
 </section>
 
