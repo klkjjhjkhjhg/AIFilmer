@@ -75,6 +75,50 @@
     box-shadow: 0 2px 8px rgba(0,0,0,0.04);
   }
 
+  /* ---------- Hero 场景链路 CTA ---------- */
+  .scene-cta {
+    display: inline-flex;
+    align-items: center;
+    gap: 14px;
+    margin-top: 26px;
+    padding: 14px 22px 14px 18px;
+    background: linear-gradient(135deg, rgba(255,214,224,0.85) 0%, rgba(227,214,255,0.85) 50%, rgba(199,240,219,0.85) 100%);
+    border-radius: 22px;
+    text-decoration: none;
+    color: var(--text-primary);
+    box-shadow: 0 8px 24px rgba(220, 180, 150, 0.22);
+    transition: transform 0.18s ease, box-shadow 0.18s ease;
+    border: 1px solid rgba(255,255,255,0.7);
+  }
+  .scene-cta:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 14px 34px rgba(220, 180, 150, 0.32);
+  }
+  .scene-cta-emoji {
+    font-size: 26px;
+    line-height: 1;
+  }
+  .scene-cta-main {
+    font-size: 15.5px;
+    font-weight: 800;
+    color: #3A3A3A;
+    letter-spacing: 0.3px;
+  }
+  .scene-cta-sub {
+    font-size: 12.5px;
+    color: var(--text-secondary);
+    margin-left: -4px;
+  }
+  .scene-cta-arrow {
+    font-size: 22px;
+    color: #9B2C5C;
+    font-weight: 700;
+    transition: transform 0.18s ease;
+  }
+  .scene-cta:hover .scene-cta-arrow {
+    transform: translateX(4px);
+  }
+
   /* ---------- 容器 ---------- */
   .container {
     max-width: 1080px;
@@ -546,6 +590,12 @@
     <span class="badge">🤖 AI 自主拍摄</span>
     <span class="badge">🎬 多镜头连续创作</span>
   </div>
+  <a class="scene-cta" href="./docs/scenario-walkthrough.html">
+    <span class="scene-cta-emoji">🎬</span>
+    <span class="scene-cta-main">看一段完整场景链路</span>
+    <span class="scene-cta-sub">夕阳下的咖啡店 · 端云 4 层 × 6 个模型嵌入点</span>
+    <span class="scene-cta-arrow">→</span>
+  </a>
 </section>
 
 <section>
@@ -691,18 +741,19 @@
 <section>
   <div class="container">
     <h2>📚 想了解更多？</h2>
-    <p class="section-sub">完整设计文档 — 需求分析 / 概要设计 / 详细设计</p>
+    <p class="section-sub">完整设计文档 — 需求分析 / 概要设计 / 详细设计 / 场景链路</p>
 
     <div class="docs-grid">
       <a class="doc-card" href="./docs/requirements-analysis.html"><div class="icon">📋</div><div class="label">Requirements</div><h3>需求分析</h3><p>实验场景、MVP 范围、限制与风险。</p><div class="links"><span>HTML 在线</span><span>Markdown</span></div></a>
       <a class="doc-card" href="./docs/high-level-design.html"><div class="icon">🏗️</div><div class="label">High-level Design</div><h3>概要设计</h3><p>端云架构、数据流、部署。</p><div class="links"><span>HTML 在线</span><span>Markdown</span></div></a>
       <a class="doc-card" href="./docs/detailed-design.html"><div class="icon">🔧</div><div class="label">Detailed Design</div><h3>详细设计</h3><p>状态机、协议 schema、关键算法、ADR。</p><div class="links"><span>HTML 在线</span><span>Markdown</span></div></a>
+      <a class="doc-card" href="./docs/scenario-walkthrough.html"><div class="icon">🎬</div><div class="label">Scenario Walkthrough</div><h3>场景链路</h3><p>夕阳下的咖啡店：端云双环 + 6 个模型嵌入点交互式拆解。</p><div class="links"><span>打开页面</span><span>查看</span></div></a>
     </div>
   </div>
 </section>
 
 <footer>
-  <p>📚 <a href="./docs/requirements-analysis.html">需求分析</a> · <a href="./docs/high-level-design.html">概要设计</a> · <a href="./docs/detailed-design.html">详细设计</a></p>
+  <p>📚 <a href="./docs/requirements-analysis.html">需求分析</a> · <a href="./docs/high-level-design.html">概要设计</a> · <a href="./docs/detailed-design.html">详细设计</a> · <a href="./docs/scenario-walkthrough.html">场景链路</a></p>
   <p style="margin-top: 8px;">AIFilmer MVP · 2026 · 🎬</p>
 </footer>
 

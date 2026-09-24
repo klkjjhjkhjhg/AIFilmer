@@ -17,6 +17,7 @@ AIFilmer 是一款 iOS 旗舰 App（MVP 阶段）。用户输入一段主题，A
 | 📋 **需求分析** | User Story + 验收标准 + 非功能需求 + 风险 | [requirements-analysis.md](./docs/requirements-analysis.md) | [requirements-analysis.html](./docs/requirements-analysis.html) |
 | 🏗️ **概要设计** | C4 模型（System Context + Container）+ 数据流 + 部署 | [high-level-design.md](./docs/high-level-design.md) | [high-level-design.html](./docs/high-level-design.html) |
 | 🔧 **详细设计** | Director 状态机 + 双环 + Shot Protocol + 算法 + ADR | [detailed-design.md](./docs/detailed-design.md) | [detailed-design.html](./docs/detailed-design.html) |
+| 🎬 **场景链路** | 夕阳下的咖啡店：端云 4 层协同 + 6 个模型嵌入点交互拆解 | —— | [scenario-walkthrough.html](./docs/scenario-walkthrough.html) |
 
 > 🌐 在浏览器中阅读：[GitHub Pages 站点](https://<user>.github.io/AIFilmer/)（部署后启用）
 
@@ -73,7 +74,8 @@ AIFilmer/
 ├── docs/                           ← 设计文档（md + html）
 │   ├── requirements-analysis.md / .html
 │   ├── high-level-design.md / .html
-│   └── detailed-design.md / .html
+│   ├── detailed-design.md / .html
+│   └── scenario-walkthrough.html   ← 场景链路图（夕阳下的咖啡店）
 ├── protocol/                       ← Shot Protocol JSON Schema 与示例
 ├── models/                         ← 端侧模型存储（按需下载，不入仓）
 ├── app/                            ← iOS 工程（待创建）

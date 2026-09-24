@@ -1,0 +1,905 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AIFilmer · 场景链路：夕阳下的咖啡店</title>
+<style>
+  :root {
+    --macaron-pink:   #FFD6E0;
+    --macaron-mint:   #C7F0DB;
+    --macaron-yellow: #FFF1B6;
+    --macaron-blue:   #C8E7FF;
+    --macaron-lilac:  #E3D6FF;
+    --macaron-peach:  #FFE0C2;
+    --text-primary:   #3A3A3A;
+    --text-secondary: #6B6B6B;
+    --bg-card:        #FFFFFF;
+    --bg-page:        #FFF9F5;
+    --border-soft:    #F0E6DC;
+    --shadow:         0 6px 24px rgba(220, 180, 150, 0.15);
+    --radius:         18px;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", "Helvetica Neue", "Microsoft YaHei", sans-serif;
+    background: var(--bg-page);
+    color: var(--text-primary);
+    line-height: 1.7;
+  }
+  .topbar {
+    padding: 14px 24px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: rgba(255,255,255,0.6);
+    backdrop-filter: blur(10px);
+    border-bottom: 1px solid var(--border-soft);
+    position: sticky;
+    top: 0;
+    z-index: 50;
+  }
+  .topbar .brand {
+    font-weight: 800; font-size: 17px;
+    background: linear-gradient(135deg, #E89AAA 0%, #95D3B4 100%);
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+    text-decoration: none;
+  }
+  .topbar nav a { color: var(--text-secondary); text-decoration: none; margin-left: 18px; font-size: 14px; }
+  .topbar nav a:hover, .topbar nav a.active { color: #9B2C5C; font-weight: 600; }
+
+  .hero {
+    background:
+      radial-gradient(circle at 15% 20%, var(--macaron-pink) 0%, transparent 40%),
+      radial-gradient(circle at 85% 30%, var(--macaron-mint) 0%, transparent 45%),
+      radial-gradient(circle at 50% 90%, var(--macaron-yellow) 0%, transparent 50%),
+      linear-gradient(135deg, #FFFAF3 0%, #FFF5EE 100%);
+    padding: 70px 24px 50px; text-align: center;
+  }
+  .hero .crumb { font-size: 12.5px; color: var(--text-secondary); letter-spacing: 1.5px; text-transform: uppercase; margin-bottom: 14px; }
+  .hero h1 {
+    font-size: 38px; font-weight: 800; letter-spacing: -0.5px; margin-bottom: 10px;
+    background: linear-gradient(135deg, #E89AAA 0%, #C7B8E8 50%, #95D3B4 100%);
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+  }
+  .hero .tagline { font-size: 16px; color: var(--text-secondary); max-width: 680px; margin: 0 auto 22px; }
+  .hero .scene-tag {
+    display: inline-flex; align-items: center; gap: 8px;
+    background: rgba(255,255,255,0.8); padding: 8px 18px; border-radius: 24px;
+    font-size: 13.5px; color: var(--text-primary); box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+  }
+  .hero .scene-tag .dot { width: 8px; height: 8px; border-radius: 50%; background: linear-gradient(135deg, #E89AAA, #C7B8E8); }
+
+  .container { max-width: 1600px; margin: 0 auto; padding: 0 16px; }
+  section { padding: 50px 0; }
+  section h2 { font-size: 26px; font-weight: 700; margin-bottom: 8px; text-align: center; }
+  section .section-sub { text-align: center; color: var(--text-secondary); margin-bottom: 28px; font-size: 14.5px; }
+
+  /* 图卡 */
+  .flow-card {
+    background: var(--bg-card); border-radius: var(--radius);
+    padding: 20px; box-shadow: var(--shadow); border: 1px solid var(--border-soft);
+    overflow-x: auto;
+  }
+  .flow-card { overflow-x: auto; }
+  .flow-card svg { display: block; width: 1520px; height: 1240px; max-width: none; margin: 0 auto; }
+
+  /* 图例 */
+  .legend {
+    display: flex; justify-content: center; gap: 22px; flex-wrap: wrap;
+    margin-top: 18px; font-size: 13px; color: var(--text-secondary);
+  }
+  .legend .dot {
+    display: inline-block; width: 14px; height: 14px; border-radius: 4px; margin-right: 6px; vertical-align: middle;
+  }
+
+  /* 摘要 */
+  .summary {
+    display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 14px; margin-top: 22px;
+  }
+  .summary-item {
+    background: var(--bg-card); border-radius: 14px;
+    padding: 16px 18px; border: 1px solid var(--border-soft);
+  }
+  .summary-item .lbl { font-size: 11.5px; text-transform: uppercase; letter-spacing: 1.3px; color: var(--text-secondary); margin-bottom: 6px; font-weight: 700; }
+  .summary-item .val { font-size: 14.5px; color: var(--text-primary); }
+
+  /* 模型胶囊 */
+  .models-title { text-align: center; font-size: 14px; color: var(--text-secondary); margin: 32px 0 18px; letter-spacing: 0.5px; }
+  .models-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 14px; }
+  .model-card {
+    background: var(--bg-card); border: 1px solid var(--border-soft); border-radius: var(--radius);
+    box-shadow: var(--shadow); overflow: hidden; cursor: pointer;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+  }
+  .model-card:hover { transform: translateY(-3px); box-shadow: 0 12px 32px rgba(220, 180, 150, 0.22); }
+  .model-card .head { padding: 14px 18px; display: flex; align-items: center; gap: 10px; }
+  .model-card .pill {
+    display: inline-flex; align-items: center; justify-content: center;
+    width: 32px; height: 32px; border-radius: 10px; font-size: 16px; flex-shrink: 0;
+  }
+  .pill-pink   { background: var(--macaron-pink); }
+  .pill-mint   { background: var(--macaron-mint); }
+  .pill-yellow { background: var(--macaron-yellow); }
+  .pill-blue   { background: var(--macaron-blue); }
+  .pill-lilac  { background: var(--macaron-lilac); }
+  .pill-peach  { background: var(--macaron-peach); }
+  .model-card .name { font-weight: 700; font-size: 15px; }
+  .model-card .where { font-size: 11.5px; color: var(--text-secondary); margin-top: 2px; }
+  .model-card .badge-side { margin-left: auto; font-size: 10.5px; padding: 3px 8px; border-radius: 8px; font-weight: 700; letter-spacing: 0.5px; }
+  .badge-side.cloud { background: var(--macaron-blue); color: #2C5C8A; }
+  .badge-side.edge  { background: var(--macaron-mint); color: #2D6A4F; }
+
+  .model-card .body { max-height: 0; overflow: hidden; transition: max-height 0.35s ease; }
+  .model-card.open .body { max-height: 1200px; }
+  .model-card .body-inner { padding: 0 18px 18px; border-top: 1px dashed var(--border-soft); margin-top: 4px; padding-top: 14px; }
+  .model-card .desc { font-size: 13.5px; color: var(--text-primary); margin-bottom: 10px; line-height: 1.6; }
+  .model-card .io { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 12px; }
+  .model-card .io .cell { background: var(--bg-page); border-radius: 10px; padding: 8px 12px; font-size: 12px; color: var(--text-secondary); }
+  .model-card .io .cell b { color: var(--text-primary); display: block; margin-bottom: 2px; font-size: 12.5px; }
+  .model-card .arch-box { background: var(--bg-page); border-radius: 12px; padding: 12px; margin: 10px 0; text-align: center; }
+  .model-card .arch-box svg { max-width: 100%; height: auto; }
+  .model-card .arch-cap { font-size: 11px; color: var(--text-secondary); margin-top: 4px; }
+  .model-card .links { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 8px; font-size: 13px; }
+  .model-card .links a { color: #B4546F; text-decoration: none; padding: 5px 12px; background: var(--macaron-pink); border-radius: 12px; font-weight: 600; }
+  .model-card .links a:hover { background: var(--macaron-peach); }
+  .model-card .links a.alt { background: var(--macaron-blue); color: #2C5C8A; }
+  .model-card .toggle { font-size: 11px; color: var(--text-secondary); margin-left: auto; }
+  .model-card .chev { display: inline-block; transition: transform 0.25s ease; margin-left: 4px; }
+  .model-card.open .chev { transform: rotate(180deg); }
+
+  .roles { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 14px; }
+  .role { background: var(--bg-card); border-radius: 14px; padding: 18px; border: 1px solid var(--border-soft); box-shadow: 0 4px 14px rgba(220, 180, 150, 0.08); }
+  .role .icon { font-size: 28px; margin-bottom: 6px; }
+  .role h4 { font-size: 15px; margin-bottom: 4px; }
+  .role p { font-size: 13px; color: var(--text-secondary); margin: 0; }
+
+  footer { padding: 36px 24px; text-align: center; color: var(--text-secondary); font-size: 13px; border-top: 1px solid var(--border-soft); margin-top: 30px; }
+  footer a { color: #B4546F; text-decoration: none; }
+
+  @media (max-width: 720px) { .hero h1 { font-size: 28px; } }
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <a class="brand" href="../index.html">🎬 AIFilmer</a>
+  <nav>
+    <a href="../index.html">首页</a>
+    <a href="./requirements-analysis.html">需求</a>
+    <a href="./high-level-design.html">概要</a>
+    <a href="./detailed-design.html">详细</a>
+    <a href="./scenario-walkthrough.html" class="active">场景链路</a>
+  </nav>
+</div>
+
+<section class="hero">
+  <div class="crumb">Typical Scenario Walkthrough</div>
+  <h1>拍一段「夕阳下的咖啡店」</h1>
+  <p class="tagline">从输入主题，到录下一段 AI 主导的连续镜头。下方是端云协同的真实链路——每一层谁在跑什么。</p>
+  <div class="scene-tag"><span class="dot"></span>演示场景：风景静物 · sunset_cafe</div>
+</section>
+
+<section>
+  <div class="container">
+    <h2>🧭 端云协同链路</h2>
+    <p class="section-sub">横轴 = 时间（拍摄全过程），纵轴 = 部署层（端 / 桥 / 云）；箭头 = 跨层调用</p>
+
+    <div class="flow-card">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1520 1240" font-family="-apple-system, PingFang SC, sans-serif">
+  <defs>
+    <marker id="arr" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 z" fill="#9B8F7A"/>
+    </marker>
+    <marker id="arrCur" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="5" markerHeight="5" orient="auto">
+      <path d="M0,0 L10,5 L0,10 z" fill="#C2B6D9"/>
+    </marker>
+    <marker id="arrReq" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 z" fill="#2C5C8A"/>
+    </marker>
+    <filter id="cardShadow" x="-20%" y="-20%" width="140%" height="140%">
+      <feDropShadow dx="0" dy="2" stdDeviation="2" flood-color="#D8B89A" flood-opacity="0.18"/>
+    </filter>
+  </defs>
+
+  <!-- 时间轴（顶部）—— 严格对齐到下方卡片中心 -->
+  <line x1="140" y1="58" x2="1400" y2="58" stroke="#F0E6DC" stroke-width="2"/>
+  <!-- 5 个里程碑，每个都垂直对齐下方对应卡片 -->
+  <g font-size="11" text-anchor="middle">
+    <!-- t=0s：用户输入主题，卡片中心 (150, 75+22) -->
+    <line x1="225" y1="58" x2="225" y2="75" stroke="#F0E6DC" stroke-width="1.5" stroke-dasharray="2 2"/>
+    <circle cx="225" cy="58" r="6" fill="#FFD6E0" stroke="#E89AAA" stroke-width="2"/>
+    <text x="225" y="42" font-weight="700" letter-spacing="1" fill="#9B2C5C">t = 0s</text>
+    <text x="225" y="74" font-size="9" fill="#9B2C5C" font-style="italic">用户输入</text>
+
+    <!-- t≈3-5s：4 个镜头脚本返回，卡片中心 (490+95, 75) -->
+    <line x1="585" y1="58" x2="585" y2="75" stroke="#F0E6DC" stroke-width="1.5" stroke-dasharray="2 2"/>
+    <circle cx="585" cy="58" r="6" fill="#FFF1B6" stroke="#C9A227" stroke-width="2"/>
+    <text x="585" y="42" font-weight="700" letter-spacing="1" fill="#8A6D1E">t ≈ 3-5s</text>
+    <text x="585" y="74" font-size="9" fill="#8A6D1E" font-style="italic">脚本返回</text>
+
+    <!-- t≈6s：用户对准 + 点开始，卡片中心 (700+80, 75) -->
+    <line x1="780" y1="58" x2="780" y2="75" stroke="#F0E6DC" stroke-width="1.5" stroke-dasharray="2 2"/>
+    <circle cx="780" cy="58" r="6" fill="#C7F0DB" stroke="#5BB089" stroke-width="2"/>
+    <text x="780" y="42" font-weight="700" letter-spacing="1" fill="#2D6A4F">t ≈ 6s</text>
+    <text x="780" y="74" font-size="9" fill="#2D6A4F" font-style="italic">点开始</text>
+
+    <!-- t≈8s 起：Fast Loop 启动（卡片中心 = Fast Loop 大框中心 1200） -->
+    <line x1="1200" y1="58" x2="1200" y2="75" stroke="#F0E6DC" stroke-width="1.5" stroke-dasharray="2 2"/>
+    <circle cx="1200" cy="58" r="6" fill="#E3D6FF" stroke="#9B85D8" stroke-width="2"/>
+    <text x="1200" y="42" font-weight="700" letter-spacing="1" fill="#5C4D8A">t ≈ 8s 起</text>
+    <text x="1200" y="74" font-size="9" fill="#5C4D8A" font-style="italic">Fast Loop 启动</text>
+
+    <!-- 持续区间：Fast Loop 跑到切换（粗线段强调"持续拍摄"） -->
+    <rect x="800" y="68" width="345" height="4" rx="2" fill="#9B85D8" opacity="0.4"/>
+
+    <!-- 切换：切换节点中心 (900+60, 75) -->
+    <line x1="960" y1="58" x2="960" y2="75" stroke="#F0E6DC" stroke-width="1.5" stroke-dasharray="2 2"/>
+    <circle cx="960" cy="58" r="6" fill="#FFD6E0" stroke="#E89AAA" stroke-width="2"/>
+    <text x="960" y="42" font-weight="700" letter-spacing="1" fill="#9B2C5C">切换</text>
+    <text x="960" y="74" font-size="9" fill="#9B2C5C" font-style="italic">镜头切换</text>
+
+    <!-- 结束：停止拍摄节点中心 (1060+85, 75) -->
+    <line x1="1145" y1="58" x2="1145" y2="75" stroke="#F0E6DC" stroke-width="1.5" stroke-dasharray="2 2"/>
+    <circle cx="1145" cy="58" r="6" fill="#FFE0C2" stroke="#D89A6B" stroke-width="2"/>
+    <text x="1145" y="42" font-weight="700" letter-spacing="1" fill="#9B5C2C">结束</text>
+  </g>
+
+  <!-- ============ 行 1：端侧（iPhone）============ -->
+  <g>
+    <rect x="0" y="80" width="1520" height="460" fill="#FFFAF3" stroke="#F0E6DC"/>
+    <!-- 左侧标签条：130px 宽，横排三行，不再旋转 -->
+    <rect x="0" y="80" width="130" height="460" fill="#E8F5EC"/>
+    <text x="65" y="170" text-anchor="middle" font-size="32">📱</text>
+    <text x="65" y="210" text-anchor="middle" font-size="14" font-weight="800" fill="#2D6A4F" letter-spacing="2">端侧</text>
+    <text x="65" y="232" text-anchor="middle" font-size="11" font-weight="600" fill="#2D6A4F" letter-spacing="2">EDGE · iPhone</text>
+
+    <!-- 用户输入主题 -->
+    <g transform="translate(150,110)">
+      <rect width="150" height="64" rx="10" fill="#FFFFFF" stroke="#F0E6DC" filter="url(#cardShadow)"/>
+      <text x="75" y="22" text-anchor="middle" font-size="12" font-weight="700">👤 用户输入主题</text>
+      <text x="75" y="42" text-anchor="middle" font-size="10" fill="#9B2C5C">"夕阳下的咖啡店"</text>
+    </g>
+
+    <!-- Director -->
+    <g transform="translate(320,110)">
+      <rect width="150" height="64" rx="10" fill="#FFFFFF" stroke="#F0E6DC" filter="url(#cardShadow)"/>
+      <text x="75" y="22" text-anchor="middle" font-size="12" font-weight="700">🎬 Director</text>
+      <text x="75" y="42" text-anchor="middle" font-size="10" fill="#6B6B6B">AppState: generatingScript</text>
+    </g>
+
+    <!-- 返回的脚本 -->
+    <g transform="translate(490,110)">
+      <rect width="190" height="64" rx="10" fill="#FFFFFF" stroke="#F0E6DC" filter="url(#cardShadow)"/>
+      <text x="95" y="20" text-anchor="middle" font-size="12" font-weight="700">📜 4 个镜头脚本</text>
+      <text x="95" y="38" text-anchor="middle" font-size="9.5" fill="#9B2C5C">① 门头全景 ② 招牌</text>
+      <text x="95" y="54" text-anchor="middle" font-size="9.5" fill="#9B2C5C">③ 拉花特写 ④ 街角</text>
+    </g>
+
+    <!-- 用户点开始 -->
+    <g transform="translate(700,110)">
+      <rect width="160" height="64" rx="10" fill="#FFFFFF" stroke="#F0E6DC" filter="url(#cardShadow)"/>
+      <text x="80" y="22" text-anchor="middle" font-size="12" font-weight="700">👤 对准 + 点开始</text>
+      <text x="80" y="42" text-anchor="middle" font-size="10" fill="#6B6B6B">AppState → shooting</text>
+    </g>
+
+    <!-- Fast Loop 大框（持续整段拍摄） -->
+    <g transform="translate(880,95)">
+      <rect width="640" height="350" rx="14" fill="#FFFFFF" stroke="#F0E6DC" stroke-dasharray="6 4" filter="url(#cardShadow)"/>
+      <text x="16" y="24" font-size="12" font-weight="700" fill="#2D6A4F" letter-spacing="1">⚡ FAST LOOP · 端侧 30Hz · ≤ 500ms 闭环</text>
+      <text x="624" y="24" text-anchor="end" font-size="10" fill="#9B8F7A" font-style="italic">贯穿整段拍摄（镜头 1 起 → 切换）</text>
+
+      <!-- 延迟预算小图例（右下角） -->
+      <g transform="translate(380,275)">
+        <rect width="244" height="60" rx="6" fill="#FFFAF3" stroke="#F0E6DC"/>
+        <text x="10" y="14" font-size="9" font-weight="700" fill="#5C4D8A">⏱ 500ms 延迟预算</text>
+        <text x="10" y="28" font-size="9" fill="#6B6B6B">Camera 50ms + Inference 50ms</text>
+        <text x="10" y="40" font-size="9" fill="#6B6B6B">Driver 100ms + Buffer 300ms</text>
+        <text x="10" y="52" font-size="9" fill="#9B8F7A" font-style="italic">端侧 NPU · 不依赖网络</text>
+      </g>
+
+      <!-- 第一排：Camera → Vision → Tracker -->
+      <!-- Camera -->
+      <g transform="translate(16,42)">
+        <rect width="80" height="86" rx="8" fill="#FFE0C2"/>
+        <text x="40" y="26" text-anchor="middle" font-size="22">📷</text>
+        <text x="40" y="52" text-anchor="middle" font-size="11" font-weight="700">Camera</text>
+        <text x="40" y="68" text-anchor="middle" font-size="9" fill="#6B6B6B">AVF</text>
+        <text x="40" y="80" text-anchor="middle" font-size="8" fill="#6B6B6B">1080p 30fps</text>
+      </g>
+
+      <!-- Vision Pipeline -->
+      <g transform="translate(112,42)">
+        <rect width="240" height="86" rx="8" fill="#FFF1B6"/>
+        <text x="120" y="16" text-anchor="middle" font-size="10" font-weight="700" fill="#8A6D1E">👁 Vision Pipeline</text>
+        <rect x="10" y="24" width="106" height="54" rx="6" fill="#FFFFFF"/>
+        <text x="63" y="42" text-anchor="middle" font-size="11" font-weight="700">YOLOv8n</text>
+        <text x="63" y="58" text-anchor="middle" font-size="9" fill="#6B6B6B">主体检测</text>
+        <text x="63" y="72" text-anchor="middle" font-size="8" fill="#9B8F7A">COCO 80 类 · ANE</text>
+        <rect x="124" y="24" width="106" height="54" rx="6" fill="#FFFFFF"/>
+        <text x="177" y="42" text-anchor="middle" font-size="11" font-weight="700">MobileNetV3</text>
+        <text x="177" y="58" text-anchor="middle" font-size="9" fill="#6B6B6B">场景分类</text>
+        <text x="177" y="72" text-anchor="middle" font-size="8" fill="#9B8F7A">6 场景 · ANE</text>
+      </g>
+
+      <!-- Subject Tracker -->
+      <g transform="translate(368,42)">
+        <rect width="256" height="86" rx="8" fill="#C7F0DB"/>
+        <text x="128" y="16" text-anchor="middle" font-size="10" font-weight="700" fill="#2D6A4F">🔗 Subject Tracker</text>
+        <rect x="10" y="24" width="116" height="54" rx="6" fill="#FFFFFF"/>
+        <text x="68" y="42" text-anchor="middle" font-size="11" font-weight="700">ByteTrack</text>
+        <text x="68" y="58" text-anchor="middle" font-size="9" fill="#6B6B6B">数据关联</text>
+        <text x="68" y="72" text-anchor="middle" font-size="8" fill="#9B8F7A">两阶段 · IoU ≥ 0.3</text>
+        <rect x="134" y="24" width="112" height="54" rx="6" fill="#FFFFFF"/>
+        <text x="190" y="42" text-anchor="middle" font-size="11" font-weight="700">Kalman 2D</text>
+        <text x="190" y="58" text-anchor="middle" font-size="9" fill="#6B6B6B">轨迹平滑</text>
+        <text x="190" y="72" text-anchor="middle" font-size="8" fill="#9B8F7A">8 状态 · 常速度</text>
+      </g>
+
+      <!-- 第二排：PolicyEngine / CameraDriver / Color Engine -->
+      <g transform="translate(16,148)">
+        <rect width="190" height="76" rx="8" fill="#E3D6FF"/>
+        <text x="95" y="20" text-anchor="middle" font-size="12" font-weight="700" fill="#5C4D8A">🎚 PolicyEngine</text>
+        <text x="95" y="40" text-anchor="middle" font-size="9.5" fill="#6B6B6B">EV 死区 ±0.3</text>
+        <text x="95" y="55" text-anchor="middle" font-size="9.5" fill="#6B6B6B">Zoom EMA</text>
+        <text x="95" y="70" text-anchor="middle" font-size="8.5" fill="#9B8F7A" font-style="italic">参数变化有惯性</text>
+      </g>
+
+      <g transform="translate(222,148)">
+        <rect width="190" height="76" rx="8" fill="#FFE0C2"/>
+        <text x="95" y="20" text-anchor="middle" font-size="22">⚙️</text>
+        <text x="95" y="44" text-anchor="middle" font-size="12" font-weight="700">CameraDriver</text>
+        <text x="95" y="60" text-anchor="middle" font-size="9.5" fill="#6B6B6B">setExp / AWB / Focus</text>
+        <text x="95" y="72" text-anchor="middle" font-size="8.5" fill="#9B8F7A" font-style="italic">AVFoundation</text>
+      </g>
+
+      <g transform="translate(428,148)">
+        <rect width="196" height="76" rx="8" fill="#FFD6E0"/>
+        <text x="98" y="20" text-anchor="middle" font-size="12" font-weight="700" fill="#9B2C5C">🎨 Color Engine</text>
+        <text x="98" y="40" text-anchor="middle" font-size="10" font-weight="700">Metal Shader</text>
+        <text x="98" y="55" text-anchor="middle" font-size="9.5" fill="#6B6B6B">3D LUT</text>
+        <text x="98" y="70" text-anchor="middle" font-size="8.5" fill="#9B8F7A" font-style="italic">色温 / 饱和度 / 对比度</text>
+      </g>
+
+      <!-- 录制 -->
+      <g transform="translate(16,240)">
+        <rect width="608" height="26" rx="6" fill="#FF8585"/>
+        <text x="304" y="18" text-anchor="middle" font-size="12" font-weight="700" fill="#FFFFFF">⏺ 录制中 · 1080p / 30fps · 沙盒（本地，不上传）</text>
+      </g>
+
+      <!-- 内部箭头 -->
+      <path d="M96,85 L112,85" stroke="#9B8F7A" stroke-width="1.4" marker-end="url(#arr)"/>
+      <path d="M352,85 L368,85" stroke="#9B8F7A" stroke-width="1.4" marker-end="url(#arr)"/>
+      <path d="M232,128 L100,148" stroke="#9B8F7A" stroke-width="1.2" marker-end="url(#arr)"/>
+      <path d="M488,128 L300,148" stroke="#9B8F7A" stroke-width="1.2" marker-end="url(#arr)"/>
+      <path d="M528,128 L500,148" stroke="#9B8F7A" stroke-width="1.2" marker-end="url(#arr)"/>
+      <path d="M110,224 L320,240" stroke="#9B8F7A" stroke-width="1.2" stroke-dasharray="3 3" marker-end="url(#arr)"/>
+    </g>
+
+    <!-- 镜头切换节点（Fast Loop 大框下方，避免遮挡） -->
+    <g transform="translate(900,460)">
+      <rect width="120" height="64" rx="10" fill="#E3D6FF" stroke="#C9B8E8" filter="url(#cardShadow)"/>
+      <text x="60" y="26" text-anchor="middle" font-size="13" font-weight="700" fill="#5C4D8A">🔄 切换</text>
+      <text x="60" y="46" text-anchor="middle" font-size="9.5" fill="#5C4D8A">shot → next</text>
+    </g>
+
+    <!-- 结束 -->
+    <g transform="translate(1060,460)">
+      <rect width="170" height="64" rx="10" fill="#FFFFFF" stroke="#F0E6DC" filter="url(#cardShadow)"/>
+      <text x="85" y="24" text-anchor="middle" font-size="13" font-weight="700">⏹ 停止拍摄</text>
+      <text x="85" y="44" text-anchor="middle" font-size="10" fill="#6B6B6B">AppState → idle</text>
+    </g>
+
+    <!-- 行内箭头 -->
+    <path d="M300,142 L320,142" stroke="#9B8F7A" stroke-width="1.5" marker-end="url(#arr)"/>
+    <path d="M470,142 L490,142" stroke="#9B8F7A" stroke-width="1.5" marker-end="url(#arr)"/>
+    <path d="M680,142 L700,142" stroke="#9B8F7A" stroke-width="1.5" marker-end="url(#arr)"/>
+    <path d="M860,142 L880,142" stroke="#9B8F7A" stroke-width="1.5" marker-end="url(#arr)"/>
+    <!-- Fast Loop 大框下方的节点连接：Fast Loop 出口 → 切换 → 停止 -->
+    <path d="M960,460 L960,448" stroke="#9B8F7A" stroke-width="1.5" marker-end="url(#arr)"/>
+    <path d="M1020,492 L1060,492" stroke="#9B8F7A" stroke-width="1.5" marker-end="url(#arr)"/>
+
+    <!-- 跨行连接（端→桥）HTTPS 在 Director 列 -->
+    <path d="M395,180 L395,540" fill="none" stroke="#2C5C8A" stroke-width="1.4" stroke-dasharray="5 3" marker-end="url(#arrReq)"/>
+    <text x="402" y="360" font-size="10" fill="#2C5C8A" font-weight="600">HTTPS request</text>
+    <path d="M395,540 L395,180" fill="none" stroke="#2C5C8A" stroke-width="1.4" stroke-dasharray="5 3" marker-end="url(#arrReq)"/>
+    <text x="402" y="378" font-size="10" fill="#2C5C8A" font-weight="600">HTTPS response</text>
+
+    <!-- 主体匹配跨行连接（端侧 Fast Loop → 桥 → 云） -->
+    <path d="M1060,445 L1060,730" fill="none" stroke="#2C5C8A" stroke-width="1.4" stroke-dasharray="5 3" marker-end="url(#arrReq)"/>
+    <text x="1067" y="600" font-size="10" fill="#2C5C8A" font-weight="600">MATCH_SUBJECT</text>
+  </g>
+
+  <!-- ============ 行 2：Shot Protocol（端云桥）============ -->
+  <g>
+    <rect x="0" y="540" width="1520" height="130" fill="#F2F0FF" stroke="#E3D6FF"/>
+    <rect x="0" y="540" width="130" height="130" fill="#DCD0F0"/>
+    <text x="65" y="605" text-anchor="middle" font-size="32">📐</text>
+    <text x="65" y="635" text-anchor="middle" font-size="14" font-weight="800" fill="#5C4D8A" letter-spacing="2">桥</text>
+    <text x="65" y="655" text-anchor="middle" font-size="10.5" font-weight="600" fill="#5C4D8A" letter-spacing="1.5">SHOT PROTOCOL</text>
+
+    <!-- Client -->
+    <g transform="translate(150,570)">
+      <rect width="220" height="80" rx="10" fill="#FFFFFF" stroke="#C9B8E8" filter="url(#cardShadow)"/>
+      <text x="110" y="22" text-anchor="middle" font-size="13" font-weight="700" fill="#5C4D8A">📡 Shot Protocol Client</text>
+      <text x="110" y="42" text-anchor="middle" font-size="10" fill="#6B6B6B">HTTPS · JSON · MCP-like</text>
+      <text x="110" y="58" text-anchor="middle" font-size="10" fill="#6B6B6B">tool: GENERATE_SCRIPT</text>
+      <text x="110" y="72" text-anchor="middle" font-size="9" fill="#9B8F7A" font-style="italic">端侧 SDK</text>
+    </g>
+
+    <!-- Registry -->
+    <g transform="translate(390,570)">
+      <rect width="260" height="80" rx="10" fill="#FFFFFF" stroke="#C9B8E8" filter="url(#cardShadow)"/>
+      <text x="130" y="22" text-anchor="middle" font-size="13" font-weight="700" fill="#5C4D8A">📐 ShotSpec / Tool 定义</text>
+      <text x="130" y="42" text-anchor="middle" font-size="9.5" fill="#6B6B6B">GENERATE_SCRIPT · MATCH_SUBJECT</text>
+      <text x="130" y="56" text-anchor="middle" font-size="9.5" fill="#6B6B6B">COMPUTE_DIRECTION · MODIFY_SHOT</text>
+      <text x="130" y="72" text-anchor="middle" font-size="9" fill="#9B8F7A" font-style="italic">JSON Schema 校验 + 重试</text>
+    </g>
+
+    <!-- MATCH_SUBJECT 调用 -->
+    <g transform="translate(920,570)">
+      <rect width="280" height="80" rx="10" fill="#FFFFFF" stroke="#C9B8E8" filter="url(#cardShadow)"/>
+      <text x="140" y="22" text-anchor="middle" font-size="13" font-weight="700" fill="#5C4D8A">🔄 tool: MATCH_SUBJECT</text>
+      <text x="140" y="42" text-anchor="middle" font-size="10" fill="#6B6B6B">frame_url (裁剪 &lt; 50KB)</text>
+      <text x="140" y="56" text-anchor="middle" font-size="10" fill="#6B6B6B">+ target_description</text>
+      <text x="140" y="72" text-anchor="middle" font-size="9" fill="#9B8F7A" font-style="italic">→ bbox_norm + score</text>
+    </g>
+
+    <path d="M370,610 L390,610" stroke="#C2B6D9" stroke-width="1.5" marker-end="url(#arr)"/>
+    <path d="M650,610 L920,610" stroke="#C2B6D9" stroke-width="1.5" marker-end="url(#arr)"/>
+  </g>
+
+  <!-- ============ 行 3：云端 ============ -->
+  <g>
+    <rect x="0" y="670" width="1520" height="200" fill="#EAF4FF" stroke="#C8E7FF"/>
+    <rect x="0" y="670" width="130" height="200" fill="#C8DCFA"/>
+    <text x="65" y="745" text-anchor="middle" font-size="32">☁️</text>
+    <text x="65" y="780" text-anchor="middle" font-size="14" font-weight="800" fill="#2C5C8A" letter-spacing="2">云端</text>
+    <text x="65" y="800" text-anchor="middle" font-size="10.5" font-weight="600" fill="#2C5C8A" letter-spacing="1.5">CLOUD · LLM</text>
+
+    <!-- Gateway -->
+    <g transform="translate(150,695)">
+      <rect width="190" height="90" rx="10" fill="#FFFFFF" stroke="#A8D4F8" filter="url(#cardShadow)"/>
+      <text x="95" y="24" text-anchor="middle" font-size="13" font-weight="700" fill="#2C5C8A">🚪 FastAPI Gateway</text>
+      <text x="95" y="44" text-anchor="middle" font-size="10" fill="#6B6B6B">POST /scripts/generate</text>
+      <text x="95" y="58" text-anchor="middle" font-size="10" fill="#6B6B6B">POST /subjects/match</text>
+      <text x="95" y="72" text-anchor="middle" font-size="10" fill="#6B6B6B">POST /hints/direction</text>
+      <text x="95" y="86" text-anchor="middle" font-size="9" fill="#9B8F7A" font-style="italic">Auth · 配额 · 重试</text>
+    </g>
+
+    <!-- Script Service -->
+    <g transform="translate(360,695)">
+      <rect width="220" height="90" rx="10" fill="#C8E7FF" stroke="#A8D4F8" filter="url(#cardShadow)"/>
+      <text x="110" y="24" text-anchor="middle" font-size="13" font-weight="700" fill="#2C5C8A">📝 ShotScript Service</text>
+      <text x="110" y="44" text-anchor="middle" font-size="10" fill="#2C5C8A">LLM 拆镜本</text>
+      <text x="110" y="58" text-anchor="middle" font-size="9.5" fill="#6B6B6B">GPT-4o / Claude / Qwen</text>
+      <text x="110" y="72" text-anchor="middle" font-size="9.5" fill="#6B6B6B">JSON-mode · retry × 1</text>
+      <text x="110" y="86" text-anchor="middle" font-size="9" fill="#9B8F7A" font-style="italic">⏱ ~3-5s</text>
+    </g>
+
+    <!-- Subject Match -->
+    <g transform="translate(600,695)">
+      <rect width="220" height="90" rx="10" fill="#E3D6FF" stroke="#C9B8E8" filter="url(#cardShadow)"/>
+      <text x="110" y="24" text-anchor="middle" font-size="13" font-weight="700" fill="#5C4D8A">🔍 SubjectMatch Service</text>
+      <text x="110" y="44" text-anchor="middle" font-size="10" fill="#5C4D8A">Grounding DINO 1.6</text>
+      <text x="110" y="58" text-anchor="middle" font-size="9.5" fill="#6B6B6B">开放词汇检测</text>
+      <text x="110" y="72" text-anchor="middle" font-size="9.5" fill="#6B6B6B">Swin+BERT+Cross-Attn</text>
+      <text x="110" y="86" text-anchor="middle" font-size="9" fill="#9B8F7A" font-style="italic">⏱ ~300ms</text>
+    </g>
+
+    <!-- Direction Hint -->
+    <g transform="translate(840,695)">
+      <rect width="220" height="90" rx="10" fill="#C7F0DB" stroke="#A0DBC0" filter="url(#cardShadow)"/>
+      <text x="110" y="24" text-anchor="middle" font-size="13" font-weight="700" fill="#2D6A4F">🧭 DirectionHint Service</text>
+      <text x="110" y="44" text-anchor="middle" font-size="10" fill="#2D6A4F">三维方向计算</text>
+      <text x="110" y="58" text-anchor="middle" font-size="9.5" fill="#6B6B6B">当前帧 → 目标位置</text>
+      <text x="110" y="72" text-anchor="middle" font-size="9.5" fill="#6B6B6B">compute_direction()</text>
+      <text x="110" y="86" text-anchor="middle" font-size="9" fill="#9B8F7A" font-style="italic">⏱ ~1s</text>
+    </g>
+
+    <!-- Modify Shot -->
+    <g transform="translate(1080,695)">
+      <rect width="200" height="90" rx="10" fill="#FFE0C2" stroke="#D8B89A" filter="url(#cardShadow)"/>
+      <text x="100" y="24" text-anchor="middle" font-size="13" font-weight="700" fill="#9B5C2C">✏️ ModifyShot Service</text>
+      <text x="100" y="44" text-anchor="middle" font-size="10" fill="#9B5C2C">单镜头重写</text>
+      <text x="100" y="58" text-anchor="middle" font-size="9.5" fill="#6B6B6B">自然语言指令</text>
+      <text x="100" y="72" text-anchor="middle" font-size="9.5" fill="#6B6B6B">只影响该镜头</text>
+      <text x="100" y="86" text-anchor="middle" font-size="9" fill="#9B8F7A" font-style="italic">⏱ ~3s</text>
+    </g>
+
+    <!-- 模板兜底 -->
+    <g transform="translate(1300,695)">
+      <rect width="200" height="90" rx="10" fill="#FFFFFF" stroke="#D8B89A" filter="url(#cardShadow)"/>
+      <text x="100" y="24" text-anchor="middle" font-size="13" font-weight="700" fill="#9B5C2C">📦 预制模板</text>
+      <text x="100" y="44" text-anchor="middle" font-size="9.5" fill="#9B5C2C">人像 / 风景 / Vlog</text>
+      <text x="100" y="58" text-anchor="middle" font-size="9.5" fill="#6B6B6B">离线兜底</text>
+      <text x="100" y="72" text-anchor="middle" font-size="9.5" fill="#6B6B6B">断网时整套链路降级</text>
+      <text x="100" y="86" text-anchor="middle" font-size="9" fill="#9B8F7A" font-style="italic">无网络也能拍</text>
+    </g>
+
+    <path d="M340,740 L360,740" stroke="#9B8F7A" stroke-width="1.5" marker-end="url(#arr)"/>
+    <path d="M580,740 L600,740" stroke="#9B8F7A" stroke-width="1.5" marker-end="url(#arr)"/>
+    <path d="M820,740 L840,740" stroke="#9B8F7A" stroke-width="1.5" marker-end="url(#arr)"/>
+    <path d="M1060,740 L1080,740" stroke="#9B8F7A" stroke-width="1.5" marker-end="url(#arr)"/>
+    <path d="M1280,740 L1300,740" stroke="#9B8F7A" stroke-width="1.5" marker-end="url(#arr)"/>
+
+    <!-- 底部说明 -->
+    <g transform="translate(150,805)">
+      <rect width="1350" height="32" rx="8" fill="rgba(255,255,255,0.85)" stroke="#A8D4F8"/>
+      <text x="20" y="21" font-size="11.5" fill="#2C5C8A">
+        <tspan font-weight="700">重要约束：</tspan>
+        上传图像客户端裁剪至 &lt; 50KB · 主体匹配用开放词汇检测（Grounding DINO，不是 VLM）· 断网时整套链路降级到预制模板 · 视频仅本地沙盒
+      </text>
+    </g>
+  </g>
+
+  <!-- ============ 行 4：录制流（贯穿全时） ============ -->
+  <g>
+    <rect x="0" y="870" width="1520" height="90" fill="#FFF5F5" stroke="#FFD6E0"/>
+    <rect x="0" y="870" width="130" height="90" fill="#FCD0D8"/>
+    <text x="65" y="910" text-anchor="middle" font-size="30">📼</text>
+    <text x="65" y="938" text-anchor="middle" font-size="13" font-weight="800" fill="#9B2C5C" letter-spacing="2">录制</text>
+
+    <g transform="translate(150,885)">
+      <rect width="1350" height="60" rx="10" fill="#FFFFFF" stroke="#FFD6E0" filter="url(#cardShadow)"/>
+      <text x="675" y="26" text-anchor="middle" font-size="13" font-weight="700" fill="#9B2C5C">⏺ AVAssetWriter · 1080p / 30fps · H.264 硬件编码</text>
+      <text x="675" y="46" text-anchor="middle" font-size="11" fill="#6B6B6B">输出到 App 沙盒 · 仅本地 · 不上传云端 · 10 min+ 不掉帧 · 与端侧 AI 共存不抢 CPU/ANE</text>
+    </g>
+  </g>
+
+  <!-- ============ 底部：角色说明 ============ -->
+  <g transform="translate(0,975)">
+    <rect x="0" y="0" width="1520" height="120" fill="#FFFAF3" stroke="#F0E6DC"/>
+    <text x="760" y="22" text-anchor="middle" font-size="12" font-weight="700" fill="#9B8F7A" letter-spacing="2">— 角色说明 · 同一段时间里谁在做什么 —</text>
+
+    <g transform="translate(30,38)">
+      <rect width="280" height="70" rx="10" fill="#FFFFFF" stroke="#F0E6DC" filter="url(#cardShadow)"/>
+      <text x="14" y="22" font-size="12" font-weight="700">👤 用户（C 端）</text>
+      <text x="14" y="40" font-size="10" fill="#6B6B6B">输入主题 · 对准主体</text>
+      <text x="14" y="54" font-size="10" fill="#6B6B6B">确认下一镜头 · 保留指向权</text>
+    </g>
+    <g transform="translate(330,38)">
+      <rect width="280" height="70" rx="10" fill="#FFFFFF" stroke="#F0E6DC" filter="url(#cardShadow)"/>
+      <text x="14" y="22" font-size="12" font-weight="700">📱 端侧 iPhone</text>
+      <text x="14" y="40" font-size="10" fill="#6B6B6B">摄像头 + 端侧 AI + 录制</text>
+      <text x="14" y="54" font-size="10" fill="#6B6B6B">Fast Loop 30Hz · 端侧 AI 接管拍摄权</text>
+    </g>
+    <g transform="translate(630,38)">
+      <rect width="280" height="70" rx="10" fill="#FFFFFF" stroke="#C9B8E8" filter="url(#cardShadow)"/>
+      <text x="14" y="22" font-size="12" font-weight="700" fill="#5C4D8A">📐 Shot Protocol（桥）</text>
+      <text x="14" y="40" font-size="10" fill="#6B6B6B">AI 输出 JSON → 端侧翻译为动作</text>
+      <text x="14" y="54" font-size="10" fill="#6B6B6B">为动作的契约层</text>
+    </g>
+    <g transform="translate(930,38)">
+      <rect width="280" height="70" rx="10" fill="#FFFFFF" stroke="#A8D4F8" filter="url(#cardShadow)"/>
+      <text x="14" y="22" font-size="12" font-weight="700" fill="#2C5C8A">☁️ 云端大脑</text>
+      <text x="14" y="40" font-size="10" fill="#6B6B6B">LLM 拆镜本 · Grounding DINO 主体匹配</text>
+      <text x="14" y="54" font-size="10" fill="#6B6B6B">慢思考 1~3s · 不阻塞拍摄</text>
+    </g>
+    <g transform="translate(1230,38)">
+      <rect width="270" height="70" rx="10" fill="#FFFFFF" stroke="#FFD6E0" filter="url(#cardShadow)"/>
+      <text x="14" y="22" font-size="12" font-weight="700" fill="#9B2C5C">📦 离线兜底</text>
+      <text x="14" y="40" font-size="10" fill="#6B6B6B">断网时整套退回到预制模板</text>
+      <text x="14" y="54" font-size="10" fill="#6B6B6B">3 套预制脚本 + 方向提示降级</text>
+    </g>
+  </g>
+</svg>
+    </div>
+
+    <div class="legend">
+      <span><span class="dot" style="background:#FFFAF3;border:1px solid #F0E6DC"></span>端侧 iPhone</span>
+      <span><span class="dot" style="background:#F2F0FF;border:1px solid #E3D6FF"></span>Shot Protocol（桥）</span>
+      <span><span class="dot" style="background:#EAF4FF;border:1px solid #C8E7FF"></span>云端 LLM</span>
+      <span><span class="dot" style="background:#FFF5F5;border:1px solid #FFD6E0"></span>录制流</span>
+      <span><span class="dot" style="background:#FFE0C2;border:1px solid #D89A6B"></span>离线兜底</span>
+    </div>
+
+    <div class="summary">
+      <div class="summary-item"><div class="lbl">场景</div><div class="val">风景静物 · 夕阳下的咖啡店</div></div>
+      <div class="summary-item"><div class="lbl">镜头数</div><div class="val">4 个（门头 / 招牌 / 拉花 / 街角）</div></div>
+      <div class="summary-item"><div class="lbl">端侧模型</div><div class="val">4 个（YOLOv8n + MobileNetV3 + ByteTrack/Kalman + Color LUT）</div></div>
+      <div class="summary-item"><div class="lbl">云端模型</div><div class="val">LLM（拆镜本） + 开放词汇检测（主体匹配）</div></div>
+      <div class="summary-item"><div class="lbl">风格</div><div class="val">warm_sunset · 色温 +250K</div></div>
+      <div class="summary-item"><div class="lbl">录制</div><div class="val">1080p / 30fps · 仅本地沙盒</div></div>
+    </div>
+  </div>
+</section>
+
+<section>
+  <div class="container">
+    <h2>🤖 链路中嵌入的模型</h2>
+    <p class="section-sub">点开胶囊看：模型主页 + 网络架构示意 + 输入输出</p>
+
+    <div class="models-title">END · 端 侧 模 型</div>
+    <div class="models-grid">
+
+      <div class="model-card" data-key="yolo">
+        <div class="head">
+          <span class="pill pill-pink">🎯</span>
+          <div>
+            <div class="name">YOLOv8-Nano</div>
+            <div class="where">Ultralytics · 主体检测（80 类 COCO）</div>
+          </div>
+          <span class="badge-side edge">端侧</span>
+          <span class="toggle">详情 <span class="chev">▾</span></span>
+        </div>
+        <div class="body"><div class="body-inner">
+          <p class="desc">AIFilmer Fast Loop 的"眼睛"。每帧定位画面中的主体（招牌、咖啡杯、街景元素），输出 192×192 检测结果。注意：YOLO 是闭集检测器，<b>只能识别训练过的类别</b>，所以这里用它做"通用主体存在性"检测，开放词汇描述交给云端 Grounding DINO。</p>
+          <div class="io">
+            <div class="cell"><b>输入</b>1080p frame → 192×192 归一化张量</div>
+            <div class="cell"><b>输出</b>[class, bbox(x,y,w,h), score]</div>
+          </div>
+          <div class="arch-box">
+            <svg viewBox="0 0 320 130" xmlns="http://www.w3.org/2000/svg">
+              <text x="10" y="14" class="lbl" font-weight="700" fill="#3A3A3A">Backbone (CSPDarknet)</text>
+              <rect x="10" y="22" width="60" height="18" rx="4" fill="#FFE0C2"/>
+              <text x="40" y="35" text-anchor="middle" font-size="10" fill="#3A3A3A">Conv</text>
+              <rect x="78" y="22" width="60" height="18" rx="4" fill="#FFE0C2"/>
+              <text x="108" y="35" text-anchor="middle" font-size="10" fill="#3A3A3A">C2f ×N</text>
+              <rect x="146" y="22" width="60" height="18" rx="4" fill="#FFE0C2"/>
+              <text x="176" y="35" text-anchor="middle" font-size="10" fill="#3A3A3A">SPPF</text>
+              <text x="10" y="60" class="lbl" font-weight="700" fill="#3A3A3A">Neck (FPN+PAN)</text>
+              <rect x="10" y="68" width="80" height="18" rx="4" fill="#FFF1B6"/>
+              <text x="50" y="81" text-anchor="middle" font-size="10" fill="#3A3A3A">Upsample</text>
+              <rect x="98" y="68" width="80" height="18" rx="4" fill="#FFF1B6"/>
+              <text x="138" y="81" text-anchor="middle" font-size="10" fill="#3A3A3A">Concat+C2f</text>
+              <rect x="186" y="68" width="80" height="18" rx="4" fill="#FFF1B6"/>
+              <text x="226" y="81" text-anchor="middle" font-size="10" fill="#3A3A3A">Downsample</text>
+              <text x="10" y="104" class="lbl" font-weight="700" fill="#3A3A3A">Head</text>
+              <rect x="10" y="112" width="80" height="14" rx="4" fill="#FFD6E0"/>
+              <text x="50" y="122" text-anchor="middle" font-size="10" fill="#3A3A3A">Detect(P3/4/5)</text>
+              <text x="100" y="122" font-size="10" fill="#6B6B6B">→ bbox + class</text>
+            </svg>
+            <div class="arch-cap">示意 · 参考 Ultralytics 官方 yolov8.yaml</div>
+          </div>
+          <div class="links">
+            <a href="https://docs.ultralytics.com/models/yolov8/" target="_blank" rel="noopener">官方文档 →</a>
+            <a class="alt" href="https://github.com/ultralytics/ultralytics" target="_blank" rel="noopener">GitHub →</a>
+          </div>
+        </div></div>
+      </div>
+
+      <div class="model-card" data-key="bytetrack">
+        <div class="head">
+          <span class="pill pill-mint">🔗</span>
+          <div>
+            <div class="name">ByteTrack</div>
+            <div class="where">ECCV 2022 · 多目标跟踪（数据关联）</div>
+          </div>
+          <span class="badge-side edge">端侧</span>
+          <span class="toggle">详情 <span class="chev">▾</span></span>
+        </div>
+        <div class="body"><div class="body-inner">
+          <p class="desc">接收 YOLOv8n 每帧的检测框，做两阶段关联（高置信 + 低置信），避免遮挡时丢目标。配合 Kalman 做轨迹平滑。它不做"按描述找物体"——只负责把检测到的目标连成时间线。</p>
+          <div class="io">
+            <div class="cell"><b>输入</b>每帧 N 个 bbox + score</div>
+            <div class="cell"><b>输出</b>每个 tracklet 的稳定 ID + 平滑 bbox</div>
+          </div>
+          <div class="arch-box">
+            <svg viewBox="0 0 320 130" xmlns="http://www.w3.org/2000/svg">
+              <text x="10" y="14" font-size="11" font-weight="700" fill="#3A3A3A">BYTE 两阶段关联</text>
+              <rect x="10" y="22" width="90" height="22" rx="4" fill="#FFFFFF" stroke="#A0DBC0"/>
+              <text x="55" y="36" text-anchor="middle" font-size="10" fill="#3A3A3A">高置信 bbox</text>
+              <rect x="108" y="22" width="80" height="22" rx="4" fill="#C7F0DB"/>
+              <text x="148" y="36" text-anchor="middle" font-size="10" fill="#3A3A3A">Hungarian</text>
+              <text x="148" y="56" text-anchor="middle" font-size="9" fill="#6B6B6B">IoU ≥ 0.6</text>
+              <rect x="10" y="70" width="90" height="22" rx="4" fill="#FFFFFF" stroke="#A0DBC0"/>
+              <text x="55" y="84" text-anchor="middle" font-size="10" fill="#3A3A3A">低置信 bbox</text>
+              <rect x="108" y="70" width="80" height="22" rx="4" fill="#FFE0C2"/>
+              <text x="148" y="84" text-anchor="middle" font-size="10" fill="#3A3A3A">Hungarian</text>
+              <text x="148" y="104" text-anchor="middle" font-size="9" fill="#6B6B6B">IoU ≥ 0.3</text>
+              <rect x="210" y="46" width="100" height="22" rx="4" fill="#E3D6FF"/>
+              <text x="260" y="60" text-anchor="middle" font-size="10" fill="#3A3A3A">稳定 ID 输出</text>
+              <path d="M188,33 L210,55" stroke="#A0DBC0" stroke-width="1.2" marker-end="url(#arr)"/>
+              <path d="M188,80 L210,60" stroke="#A0DBC0" stroke-width="1.2" marker-end="url(#arr)"/>
+            </svg>
+            <div class="arch-cap">示意 · 关联几乎每个检测框（含低置信）</div>
+          </div>
+          <div class="links">
+            <a href="https://github.com/ifzhang/ByteTrack" target="_blank" rel="noopener">GitHub →</a>
+            <a class="alt" href="https://arxiv.org/abs/2110.06864" target="_blank" rel="noopener">论文 →</a>
+          </div>
+        </div></div>
+      </div>
+
+      <div class="model-card" data-key="kalman">
+        <div class="head">
+          <span class="pill pill-yellow">📈</span>
+          <div>
+            <div class="name">Kalman Filter (2D)</div>
+            <div class="where">经典算法 · 轨迹平滑</div>
+          </div>
+          <span class="badge-side edge">端侧</span>
+          <span class="toggle">详情 <span class="chev">▾</span></span>
+        </div>
+        <div class="body"><div class="body-inner">
+          <p class="desc">8 状态 [x, y, w, h, vx, vy, vw, vh] 常速度模型。在 ByteTrack 输出上加平滑，让跟踪不抖、不漂移。</p>
+          <div class="io">
+            <div class="cell"><b>输入</b>当前帧 bbox（带噪声）</div>
+            <div class="cell"><b>输出</b>平滑后 bbox + 不确定椭圆</div>
+          </div>
+          <div class="arch-box">
+            <svg viewBox="0 0 320 110" xmlns="http://www.w3.org/2000/svg">
+              <text x="10" y="14" font-size="11" font-weight="700" fill="#3A3A3A">Predict → Update 循环</text>
+              <rect x="10" y="24" width="80" height="32" rx="8" fill="#FFE0C2"/>
+              <text x="50" y="38" text-anchor="middle" font-size="11" font-weight="700" fill="#3A3A3A">预测</text>
+              <text x="50" y="50" text-anchor="middle" font-size="9" fill="#6B6B6B">x̂ = F·x + B·u</text>
+              <rect x="115" y="24" width="80" height="32" rx="8" fill="#FFF1B6"/>
+              <text x="155" y="38" text-anchor="middle" font-size="11" font-weight="700" fill="#3A3A3A">更新</text>
+              <text x="155" y="50" text-anchor="middle" font-size="9" fill="#6B6B6B">K = P·Hᵀ·(H·P·Hᵀ+R)⁻¹</text>
+              <rect x="220" y="24" width="80" height="32" rx="8" fill="#C7F0DB"/>
+              <text x="260" y="38" text-anchor="middle" font-size="11" font-weight="700" fill="#3A3A3A">输出</text>
+              <text x="260" y="50" text-anchor="middle" font-size="9" fill="#6B6B6B">x̂_new</text>
+              <path d="M90,40 L115,40" stroke="#9B8F7A" stroke-width="1.2" marker-end="url(#arr)"/>
+              <path d="M195,40 L220,40" stroke="#9B8F7A" stroke-width="1.2" marker-end="url(#arr)"/>
+              <path d="M260,60 Q 260,90 50,90 Q 50,75 50,60" fill="none" stroke="#C2B6D9" stroke-width="1" stroke-dasharray="3 3" marker-end="url(#arr)"/>
+              <text x="155" y="84" text-anchor="middle" font-size="10" fill="#5C4D8A" font-style="italic">下一帧</text>
+            </svg>
+            <div class="arch-cap">Predict 拓宽不确定椭圆 → Update 用测量收窄</div>
+          </div>
+          <div class="links">
+            <a href="https://www.bzarg.com/blog/the-kalman-filter/" target="_blank" rel="noopener">经典教程 →</a>
+            <a class="alt" href="https://en.wikipedia.org/wiki/Kalman_filter" target="_blank" rel="noopener">Wikipedia →</a>
+          </div>
+        </div></div>
+      </div>
+
+    </div>
+
+    <div class="models-title">CLOUD · 云 端 模 型</div>
+    <div class="models-grid">
+
+      <div class="model-card" data-key="llm">
+        <div class="head">
+          <span class="pill pill-blue">🧠</span>
+          <div>
+            <div class="name">LLM · GPT-4o / Claude / Qwen</div>
+            <div class="where">文本任务 · 拆镜本（不需要看图）</div>
+          </div>
+          <span class="badge-side cloud">云端</span>
+          <span class="toggle">详情 <span class="chev">▾</span></span>
+        </div>
+        <div class="body"><div class="body-inner">
+          <p class="desc">接收主题文本，按 JSON Schema 输出 N 个镜头的 ScriptSpec（含 type、duration、color_intent、composition_hint 等）。纯文本任务，不需要视觉能力，JSON-mode 严格度 99.7%。</p>
+          <div class="io">
+            <div class="cell"><b>输入</b>theme + shot_count + style_profile</div>
+            <div class="cell"><b>输出</b>ScriptSpec（4 个镜头，~1.5K tokens）</div>
+          </div>
+          <div class="arch-box">
+            <svg viewBox="0 0 320 110" xmlns="http://www.w3.org/2000/svg">
+              <text x="10" y="14" font-size="11" font-weight="700" fill="#3A3A3A">Tool Call 序列</text>
+              <rect x="10" y="24" width="135" height="28" rx="6" fill="#C8E7FF"/>
+              <text x="77" y="40" text-anchor="middle" font-size="11" font-weight="700" fill="#3A3A3A">GENERATE_SCRIPT</text>
+              <text x="77" y="50" text-anchor="middle" font-size="9" fill="#2C5C8A">theme → ScriptSpec</text>
+              <rect x="155" y="24" width="155" height="28" rx="6" fill="#E3D6FF"/>
+              <text x="232" y="40" text-anchor="middle" font-size="11" font-weight="700" fill="#3A3A3A">JSON Schema 校验</text>
+              <text x="232" y="50" text-anchor="middle" font-size="9" fill="#5C4D8A">retry × 1 → 模板兜底</text>
+              <rect x="10" y="64" width="300" height="32" rx="6" fill="#FFFFFF" stroke="#A8D4F8"/>
+              <text x="160" y="80" text-anchor="middle" font-size="11" font-weight="700" fill="#3A3A3A">输出：4 个镜头 JSON</text>
+              <text x="160" y="92" text-anchor="middle" font-size="9" fill="#6B6B6B">门头 / 招牌 / 拉花 / 街角 · 各 3~6s</text>
+            </svg>
+            <div class="arch-cap">架构未公开，示意 Shot Protocol 流程</div>
+          </div>
+          <div class="links">
+            <a href="https://platform.openai.com/docs/models/gpt-4o" target="_blank" rel="noopener">GPT-4o →</a>
+            <a class="alt" href="https://docs.anthropic.com/en/docs/about-claude/models" target="_blank" rel="noopener">Claude →</a>
+            <a class="alt" href="https://help.aliyun.com/zh/model-studio/developer-reference/what-is-qwen-llm" target="_blank" rel="noopener">Qwen-VL →</a>
+          </div>
+        </div></div>
+      </div>
+
+      <!-- Grounding DINO（替换 GPT-4o Vision） -->
+      <div class="model-card" data-key="groundingdino">
+        <div class="head">
+          <span class="pill pill-lilac">🔍</span>
+          <div>
+            <div class="name">Grounding DINO 1.6 Pro</div>
+            <div class="where">开放词汇检测 · "按描述找物体画框"</div>
+          </div>
+          <span class="badge-side cloud">云端</span>
+          <span class="toggle">详情 <span class="chev">▾</span></span>
+        </div>
+        <div class="body"><div class="body-inner">
+          <p class="desc">接收<font color="#9B2C5C"><b>自然语言描述</b></font>（如"咖啡店门口的猫"）+ 图像，返回 bbox。<b>专门做定位</b>，不生成废话描述。<b>为什么不用 GPT-4o Vision</b>：VLM 擅长"看图回答问题"，不是"按描述找物体"；Grounding DINO 是 2026 开放词汇检测精度天花板（LVIS zero-shot AP 51.1%，~300ms）。</p>
+          <div class="io">
+            <div class="cell"><b>输入</b>"咖啡店门口的招牌" + frame (裁剪 &lt; 50KB)</div>
+            <div class="cell"><b>输出</b>bbox_norm + score + matched_phrase</div>
+          </div>
+          <div class="arch-box">
+            <svg viewBox="0 0 320 110" xmlns="http://www.w3.org/2000/svg">
+              <text x="10" y="14" font-size="11" font-weight="700" fill="#3A3A3A">开放词汇检测流程</text>
+              <rect x="10" y="24" width="60" height="32" rx="6" fill="#FFE0C2"/>
+              <text x="40" y="38" text-anchor="middle" font-size="10" font-weight="700" fill="#3A3A3A">Swin</text>
+              <text x="40" y="50" text-anchor="middle" font-size="8" fill="#6B6B6B">图像特征</text>
+              <rect x="80" y="24" width="60" height="32" rx="6" fill="#FFF1B6"/>
+              <text x="110" y="38" text-anchor="middle" font-size="10" font-weight="700" fill="#3A3A3A">BERT</text>
+              <text x="110" y="50" text-anchor="middle" font-size="8" fill="#6B6B6B">文本特征</text>
+              <rect x="150" y="24" width="100" height="32" rx="6" fill="#E3D6FF"/>
+              <text x="200" y="38" text-anchor="middle" font-size="10" font-weight="700" fill="#3A3A3A">Cross-Attention</text>
+              <text x="200" y="50" text-anchor="middle" font-size="8" fill="#5C4D8A">图文融合</text>
+              <rect x="260" y="24" width="50" height="32" rx="6" fill="#C7F0DB"/>
+              <text x="285" y="38" text-anchor="middle" font-size="10" font-weight="700" fill="#3A3A3A">DINO</text>
+              <text x="285" y="50" text-anchor="middle" font-size="8" fill="#2D6A4F">Decoder</text>
+              <path d="M70,40 L80,40" stroke="#9B8F7A" stroke-width="1.2" marker-end="url(#arr)"/>
+              <path d="M140,40 L150,40" stroke="#9B8F7A" stroke-width="1.2" marker-end="url(#arr)"/>
+              <path d="M250,40 L260,40" stroke="#9B8F7A" stroke-width="1.2" marker-end="url(#arr)"/>
+              <text x="160" y="80" text-anchor="middle" font-size="10" fill="#6B6B6B" font-style="italic">"招牌" → bbox (0.45, 0.32, 0.30, 0.18)</text>
+            </svg>
+            <div class="arch-cap">示意 · Swin+BERT 双编码 + Cross-Attention 融合 + DINO 解码</div>
+          </div>
+          <div class="links">
+            <a href="https://github.com/IDEA-Research/GroundingDINO" target="_blank" rel="noopener">GitHub →</a>
+            <a class="alt" href="https://arxiv.org/abs/2303.05499" target="_blank" rel="noopener">论文 →</a>
+            <a class="alt" href="https://github.com/IDEA-Research/Grounded-SAM-2" target="_blank" rel="noopener">Grounded-SAM 2（视频跟踪）→</a>
+          </div>
+        </div></div>
+      </div>
+
+      <div class="model-card" data-key="metal">
+        <div class="head">
+          <span class="pill pill-peach">🎨</span>
+          <div>
+            <div class="name">Metal Shader · 3D Color LUT</div>
+            <div class="where">Apple · 端侧实时调色</div>
+          </div>
+          <span class="badge-side edge">端侧</span>
+          <span class="toggle">详情 <span class="chev">▾</span></span>
+        </div>
+        <div class="body"><div class="body-inner">
+          <p class="desc">对每一帧应用 3D LUT：色温偏移、对比度、饱和度、肤色保护。色温 ±15% / 饱和度 0.8~1.2 / 对比度 0.9~1.1，整段共用 StyleProfile=warm_sunset。</p>
+          <div class="io">
+            <div class="cell"><b>输入</b>CVPixelBuffer + StyleProfile 参数</div>
+            <div class="cell"><b>输出</b>调色后的 CVPixelBuffer（写到 AVAssetWriter）</div>
+          </div>
+          <div class="arch-box">
+            <svg viewBox="0 0 320 110" xmlns="http://www.w3.org/2000/svg">
+              <text x="10" y="14" font-size="11" font-weight="700" fill="#3A3A3A">3D LUT 查找 + 后处理</text>
+              <rect x="10" y="24" width="60" height="32" rx="6" fill="#FFFFFF" stroke="#F0E6DC"/>
+              <text x="40" y="38" text-anchor="middle" font-size="10" font-weight="700" fill="#3A3A3A">input</text>
+              <text x="40" y="50" text-anchor="middle" font-size="8" fill="#6B6B6B">frame</text>
+              <rect x="80" y="24" width="80" height="32" rx="6" fill="#FFE0C2"/>
+              <text x="120" y="38" text-anchor="middle" font-size="10" font-weight="700" fill="#3A3A3A">3D LUT</text>
+              <text x="120" y="50" text-anchor="middle" font-size="8" fill="#6B6B6B">sample → RGB'</text>
+              <rect x="170" y="24" width="80" height="32" rx="6" fill="#FFD6E0"/>
+              <text x="210" y="38" text-anchor="middle" font-size="10" font-weight="700" fill="#9B2C5C">肤色保护</text>
+              <text x="210" y="50" text-anchor="middle" font-size="8" fill="#6B6B6B">skinSafe</text>
+              <rect x="260" y="24" width="50" height="32" rx="6" fill="#C7F0DB"/>
+              <text x="285" y="38" text-anchor="middle" font-size="10" font-weight="700" fill="#3A3A3A">output</text>
+              <text x="285" y="50" text-anchor="middle" font-size="8" fill="#2D6A4F">mix</text>
+              <path d="M70,40 L80,40" stroke="#9B8F7A" stroke-width="1.2" marker-end="url(#arr)"/>
+              <path d="M160,40 L170,40" stroke="#9B8F7A" stroke-width="1.2" marker-end="url(#arr)"/>
+              <path d="M250,40 L260,40" stroke="#9B8F7A" stroke-width="1.2" marker-end="url(#arr)"/>
+              <text x="160" y="80" text-anchor="middle" font-size="10" fill="#6B6B6B" font-style="italic">色温 +250K / 饱和度 1.1 / 对比度 1.05</text>
+            </svg>
+            <div class="arch-cap">Apple 官方文档 · 3D LUT fragment shader</div>
+          </div>
+          <div class="links">
+            <a href="https://developer.apple.com/documentation/metal/metal_sample_code_library" target="_blank" rel="noopener">Apple Metal →</a>
+            <a class="alt" href="https://en.wikipedia.org/wiki/3D_lookup_table" target="_blank" rel="noopener">3D LUT 概念 →</a>
+          </div>
+        </div></div>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<footer>
+  <p>📚 <a href="../index.html">AIFilmer 首页</a> · <a href="./requirements-analysis.html">需求</a> · <a href="./high-level-design.html">概要</a> · <a href="./detailed-design.html">详细</a></p>
+  <p style="margin-top: 8px;">场景链路 · 夕阳下的咖啡店 · AIFilmer MVP · 2026</p>
+</footer>
+
+<script>
+  document.querySelectorAll('.model-card').forEach(function(card){
+    card.addEventListener('click', function(e){
+      if (e.target.closest('a')) return;
+      card.classList.toggle('open');
+    });
+  });
+  document.querySelectorAll('.model-card .links a').forEach(function(a){
+    a.addEventListener('click', function(e){ e.stopPropagation(); });
+  });
+</script>
+</body>
+</html>
