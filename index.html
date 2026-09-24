@@ -377,44 +377,145 @@
     <h2>🏛️ 技术架构</h2>
     <p class="section-sub">双环分层 · 端云协同 · Shot Protocol 协议层</p>
 
-    <div class="arch"><pre>┌──────────────────────────────────────────────────────────────┐
-│                    iOS App (Swift)                           │
-│                                                              │
-│   Presentation (SwiftUI)                                     │
-│   · 主题输入  · 脚本卡片  · 拍摄预览  · HUD 决策可视化       │
-│                          ▲                                   │
-│                          │ 事件                               │
-│   ┌──────────────────────┼───────────────────────────────┐   │
-│   │              Director (状态机 + 双环编排)           │   │
-│   │  ┌────────────────┐    ┌─────────────────────────┐   │   │
-│   │  │  Fast Loop     │    │  Creative Loop          │   │   │
-│   │  │  ≤ 500ms       │    │  1~3s                   │   │   │
-│   │  │  端侧 NPU      │    │  云侧 LLM 协同          │   │   │
-│   │  └────────────────┘    └─────────────────────────┘   │   │
-│   └──────────────────────────────────────────────────────┘   │
-│                          ▲                                   │
-│   ┌──────────────────────┼───────────────────────────────┐   │
-│   │              Capability Layer                       │   │
-│   │  VisionPipeline · CameraDriver · ColorEngine        │   │
-│   │  ShotProtocolClient · StyleProfile · ModelManager  │   │
-│   └──────────────────────────────────────────────────────┘   │
-└──────────────────────────────────────────────────────────────┘
-                          │
-                          │ HTTPS · Shot Protocol v1
-                          ▼
-┌──────────────────────────────────────────────────────────────┐
-│                  Cloud Backend (FastAPI)                     │
-│                                                              │
-│   ShotScriptService · SubjectMatchService · DirectionHint    │
-│                          │                                   │
-│                          ▼                                   │
-│                  Shot Protocol Registry                      │
-│                  (MCP-like 协议层 · JSON Schema 校验)        │
-│                          │                                   │
-│                          ▼                                   │
-│                  LLM Provider Adapter                        │
-│                  (OpenAI / Anthropic / Qwen)                 │
-└──────────────────────────────────────────────────────────────┘</pre></div>
+    <div class="arch">
+      <svg viewBox="0 0 960 790" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="AIFilmer 双环分层架构图" style="max-width:100%;height:auto;display:block;margin:0 auto;">
+        <defs>
+          <linearGradient id="bgApp" x1="0" y1="0" x2="1" y2="1">
+            <stop offset="0%"   stop-color="#FFF6EE"/>
+            <stop offset="100%" stop-color="#FFE6F0"/>
+          </linearGradient>
+          <linearGradient id="bgCloud" x1="0" y1="0" x2="1" y2="1">
+            <stop offset="0%"   stop-color="#E8F0FF"/>
+            <stop offset="100%" stop-color="#E3D6FF"/>
+          </linearGradient>
+          <linearGradient id="presentGrad" x1="0" y1="0" x2="1" y2="0">
+            <stop offset="0%" stop-color="#FFD6E0"/><stop offset="100%" stop-color="#FFE0C2"/>
+          </linearGradient>
+          <linearGradient id="fastGrad" x1="0" y1="0" x2="1" y2="0">
+            <stop offset="0%" stop-color="#C7F0DB"/><stop offset="100%" stop-color="#FFF1B6"/>
+          </linearGradient>
+          <linearGradient id="creativeGrad" x1="0" y1="0" x2="1" y2="0">
+            <stop offset="0%" stop-color="#C8E7FF"/><stop offset="100%" stop-color="#E3D6FF"/>
+          </linearGradient>
+          <linearGradient id="capGrad" x1="0" y1="0" x2="1" y2="0">
+            <stop offset="0%" stop-color="#FFE0C2"/><stop offset="100%" stop-color="#FFF1B6"/>
+          </linearGradient>
+          <linearGradient id="svcGrad" x1="0" y1="0" x2="1" y2="0">
+            <stop offset="0%" stop-color="#FFF1B6"/><stop offset="100%" stop-color="#C7F0DB"/>
+          </linearGradient>
+          <linearGradient id="protoGrad" x1="0" y1="0" x2="1" y2="0">
+            <stop offset="0%" stop-color="#E3D6FF"/><stop offset="100%" stop-color="#FFD6E0"/>
+          </linearGradient>
+          <linearGradient id="llmGrad" x1="0" y1="0" x2="1" y2="0">
+            <stop offset="0%" stop-color="#C8E7FF"/><stop offset="100%" stop-color="#E3D6FF"/>
+          </linearGradient>
+          <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+            <path d="M0,0 L10,5 L0,10 Z" fill="#9B8FB8"/>
+          </marker>
+          <filter id="cardShadow" x="-20%" y="-20%" width="140%" height="140%">
+            <feGaussianBlur in="SourceAlpha" stdDeviation="3"/>
+            <feOffset dx="0" dy="3" result="off"/>
+            <feComponentTransfer><feFuncA type="linear" slope="0.18"/></feComponentTransfer>
+            <feMerge><feMergeNode/><feMergeNode in="SourceGraphic"/></feMerge>
+          </filter>
+        </defs>
+
+        <!-- ====================== iOS App ====================== -->
+        <rect x="20" y="20" width="920" height="450" rx="22" ry="22" fill="url(#bgApp)" stroke="#F2C9D6" stroke-width="1.5"/>
+        <text x="50" y="52" font-size="20" font-weight="700" fill="#7A4D6A">📱 iOS App  (Swift · SwiftUI)</text>
+        <text x="910" y="52" text-anchor="end" font-size="13" fill="#9B8FB8">端侧为主 · NPU 推理 · 系统相机 API</text>
+
+        <!-- Presentation -->
+        <g filter="url(#cardShadow)">
+          <rect x="60" y="80" width="840" height="62" rx="14" fill="url(#presentGrad)" stroke="#F0BCC9" stroke-width="1"/>
+          <text x="80" y="105" font-size="15" font-weight="700" fill="#9B2C5C">🎨 Presentation Layer</text>
+          <text x="80" y="128" font-size="12.5" fill="#6B4754">主题输入 · 脚本卡片 · 拍摄预览 · HUD 决策可视化 · 下一镜头提示卡 · 历史作品</text>
+        </g>
+
+        <!-- Arrow down -->
+        <line x1="480" y1="148" x2="480" y2="170" stroke="#9B8FB8" stroke-width="1.5" stroke-dasharray="3 3" marker-end="url(#arrow)"/>
+        <text x="490" y="163" font-size="11" fill="#9B8FB8">事件 / 状态</text>
+
+        <!-- Director container -->
+        <g filter="url(#cardShadow)">
+          <rect x="60" y="178" width="840" height="138" rx="14" fill="#FFFFFF" stroke="#E0CFE0" stroke-width="1"/>
+          <text x="80" y="202" font-size="15" font-weight="700" fill="#5C4D8A">🎬 Director  (状态机 + 双环编排)</text>
+
+          <!-- Fast Loop -->
+          <rect x="80" y="215" width="380" height="80" rx="11" fill="url(#fastGrad)" stroke="#9FD8B5" stroke-width="1"/>
+          <text x="100" y="240" font-size="14" font-weight="700" fill="#2D6A4F">⚡ Fast Loop</text>
+          <text x="100" y="260" font-size="11.5" fill="#3A5A48">端侧 NPU · YOLOv8-Nano + ByteTrack</text>
+          <text x="100" y="277" font-size="11.5" fill="#3A5A48">PolicyEngine · 死区 / 平滑 / 调参</text>
+          <rect x="395" y="222" width="55" height="24" rx="12" fill="#FFFFFF" stroke="#9FD8B5"/>
+          <text x="422" y="239" text-anchor="middle" font-size="11" font-weight="700" fill="#2D6A4F">≤ 500ms</text>
+
+          <!-- Creative Loop -->
+          <rect x="500" y="215" width="380" height="80" rx="11" fill="url(#creativeGrad)" stroke="#A8C2E8" stroke-width="1"/>
+          <text x="520" y="240" font-size="14" font-weight="700" fill="#2C5C8A">🧠 Creative Loop</text>
+          <text x="520" y="260" font-size="11.5" fill="#3A5A78">云侧 LLM 协同 · 拆镜本 / 主体匹配</text>
+          <text x="520" y="277" font-size="11.5" fill="#3A5A78">方向提示生成 · Shot Protocol 转换</text>
+          <rect x="815" y="222" width="55" height="24" rx="12" fill="#FFFFFF" stroke="#A8C2E8"/>
+          <text x="842" y="239" text-anchor="middle" font-size="11" font-weight="700" fill="#2C5C8A">1~3s</text>
+
+          <!-- shared note -->
+          <text x="480" y="310" text-anchor="middle" font-size="11" fill="#9B8FB8" font-style="italic">Shared State · Event Bus</text>
+        </g>
+
+        <!-- Arrow down -->
+        <line x1="480" y1="322" x2="480" y2="344" stroke="#9B8FB8" stroke-width="1.5" stroke-dasharray="3 3" marker-end="url(#arrow)"/>
+
+        <!-- Capability Layer -->
+        <g filter="url(#cardShadow)">
+          <rect x="60" y="352" width="840" height="90" rx="14" fill="url(#capGrad)" stroke="#F2C9A6" stroke-width="1"/>
+          <text x="80" y="378" font-size="15" font-weight="700" fill="#9B5C2C">🔧 Capability Layer</text>
+          <g font-size="11.5" fill="#5A4234">
+            <text x="80"  y="402">📷 CameraDriver</text>
+            <text x="220" y="402">🎨 ColorEngine (Metal LUT)</text>
+            <text x="430" y="402">👁 VisionPipeline</text>
+            <text x="600" y="402">📡 ShotProtocolClient</text>
+            <text x="80"  y="425">🎞 StyleProfile</text>
+            <text x="220" y="425">📦 ModelManager (按需下载)</text>
+            <text x="430" y="425">📝 StateStore · LoopCoordinator</text>
+          </g>
+        </g>
+
+        <!-- ====================== 中间连接 ====================== -->
+        <line x1="480" y1="480" x2="480" y2="528" stroke="#9B8FB8" stroke-width="2" marker-end="url(#arrow)"/>
+        <rect x="350" y="495" width="260" height="22" rx="11" fill="#FFFFFF" stroke="#9B8FB8" stroke-width="1"/>
+        <text x="480" y="511" text-anchor="middle" font-size="12" font-weight="700" fill="#5C4D8A">HTTPS · Shot Protocol v1</text>
+
+        <!-- ====================== Cloud Backend ====================== -->
+        <rect x="20" y="538" width="920" height="240" rx="22" fill="url(#bgCloud)" stroke="#C9B8E8" stroke-width="1.5"/>
+        <text x="50" y="583" font-size="20" font-weight="700" fill="#5C4D8A">☁️ Cloud Backend  (FastAPI)</text>
+        <text x="910" y="583" text-anchor="end" font-size="13" fill="#7A6FA0">云侧为备 · 协议层 · LLM 适配</text>
+
+        <!-- Services row -->
+        <g filter="url(#cardShadow)">
+          <rect x="60" y="600" width="840" height="38" rx="11" fill="url(#svcGrad)" stroke="#9FD8B5" stroke-width="1"/>
+          <text x="480" y="625" text-anchor="middle" font-size="13" font-weight="700" fill="#2D6A4F">📝 ShotScriptService   ·   🎯 SubjectMatchService   ·   🧭 DirectionHintService</text>
+        </g>
+
+        <!-- Arrow down -->
+        <line x1="480" y1="641" x2="480" y2="660" stroke="#9B8FB8" stroke-width="1.5" stroke-dasharray="3 3" marker-end="url(#arrow)"/>
+
+        <!-- Shot Protocol Registry -->
+        <g filter="url(#cardShadow)">
+          <rect x="60" y="668" width="840" height="34" rx="11" fill="url(#protoGrad)" stroke="#D8C2E8" stroke-width="1"/>
+          <text x="80" y="690" font-size="13" font-weight="700" fill="#5C4D8A">🔌 Shot Protocol Registry</text>
+          <text x="920" y="690" text-anchor="end" font-size="11" fill="#7A6FA0">MCP-like · JSON Schema · 模板快路径 · retry</text>
+        </g>
+
+        <!-- Arrow down -->
+        <line x1="480" y1="705" x2="480" y2="724" stroke="#9B8FB8" stroke-width="1.5" stroke-dasharray="3 3" marker-end="url(#arrow)"/>
+
+        <!-- LLM Provider Adapter -->
+        <g filter="url(#cardShadow)">
+          <rect x="60" y="732" width="840" height="34" rx="11" fill="url(#llmGrad)" stroke="#A8C2E8" stroke-width="1"/>
+          <text x="80" y="754" font-size="13" font-weight="700" fill="#2C5C8A">🤖 LLM Provider Adapter</text>
+          <text x="920" y="754" text-anchor="end" font-size="11" fill="#2C5C8A">OpenAI  ·  Anthropic  ·  Qwen</text>
+        </g>
+      </svg>
+    </div>
 
     <div class="arch-legend">
       <span><span class="dot" style="background:#FFD6E0"></span>用户交互层</span>
